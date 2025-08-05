@@ -1,0 +1,81 @@
+<section #scrollContainer (scroll)="onScroll()"
+  class="h-[calc(100vh-96px)] overflow-y-auto w-full bg-white px-4 py-6 mt-6">
+<div class="flex justify-end mb-4 px-4">
+  <div class="flex items-center gap-1">
+    <label for="sort" class="text-xs text-gray-600">Ordenar por:</label>
+    <select
+      id="sort"
+      [(ngModel)]="selectedSort"
+      (change)="onSortChange()"
+      class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-black bg-white"
+    >
+      <option *ngFor="let option of sortOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select>
+  </div>
+</div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div *ngFor="let producto of productosVisibles" class="w-full bg-white rounded overflow-hidden">
+
+      <!-- Imagen con flechas -->
+      <div class="relative w-full aspect-[3/3.8] overflow-hidden group">
+        <img [src]="producto.imagenes[producto.imagenActual]" alt="Producto"
+          class="w-full h-full object-cover transition-all duration-[1200ms] ease-in-out" />
+
+        <!-- Flecha izquierda -->
+        <button (click)="retrocederImagen(producto)"
+          class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300 cursor-pointer"
+          aria-label="Imagen anterior">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <!-- Flecha derecha -->
+        <button (click)="avanzarImagen(producto)"
+          class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300 cursor-pointer"
+          aria-label="Imagen siguiente">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <!-- Indicadores (puntitos) -->
+        <div class="absolute bottom-2 right-2 flex gap-1">
+          <ng-container *ngFor="let imagen of producto.imagenes; let i = index">
+            <button class="w-2.5 h-2.5 rounded-full transition-all duration-300" [ngClass]="{
+                'bg-black': i === producto.imagenActual,
+                'bg-gray-300 border border-white': i !== producto.imagenActual
+              }" (click)="producto.imagenActual = i" aria-label="Cambiar imagen"></button>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Detalles del producto -->
+      <div class="p-3">
+        <p class="font-medium text-sm text-gray-900 leading-tight">{{ producto.nombre }}</p>
+        <p class="text-xs text-gray-600 mb-0.5 leading-tight">
+          Material: {{ producto.material }} | Color: {{ producto.color }}
+        </p>
+        <p class="text-sm font-semibold text-gray-800 mb-2 leading-tight">
+          {{ formatearPrecio(producto.precio) }}
+        </p>
+
+        <button (click)="addToCart(producto)"
+          class="w-full bg-black text-white py-1.5 text-sm rounded hover:bg-gray-800 transition">
+          AÑADIR
+        </button>
+      </div>
+
+    </div>
+  </div>
+  <!-- Loader centrado sin fondo -->
+  <div *ngIf="isLoadingMore" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+    <div class="flex flex-col items-center">
+      <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-black border-solid"></div>
+      <span class="mt-4 text-black font-medium text-sm">Cargando más productos...</span>
+    </div>
+  </div>
+</section>

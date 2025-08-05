@@ -1,0 +1,44 @@
+
+<!-- Sidenav izquierdo -->
+<div
+  class="fixed top-0 left-0 h-full w-96 z-40 bg-white shadow-lg transform transition-transform duration-300 overflow-y-auto"
+  [ngClass]="{ '-translate-x-full': !isOpen, 'translate-x-0': isOpen }">
+  <!-- Header -->
+  <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+    <span class="text-lg font-semibold text-gray-800">Filtros</span>
+    <button (click)="closeSidebar()" class="text-xl">✕</button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="p-5 text-sm text-gray-800 space-y-6">
+    <!-- Secciones con *ngFor -->
+    <ng-container *ngFor="let seccion of filtroList">
+      <div>
+        <h2 class="font-semibold text-xs text-gray-600 mb-2 uppercase">{{ seccion.titulo }}</h2>
+
+        <!-- Subcategorías si hay -->
+        <ng-container *ngIf="seccion.subcategorias; else sinSubcategorias">
+          <ng-container *ngFor="let sub of seccion.subcategorias">
+            <p class="text-xs text-gray-500 mb-1">{{ sub.nombre }}</p>
+            <div class="flex flex-wrap gap-2 mb-2">
+              <button *ngFor="let item of sub.opciones"
+                class="px-3 py-1 border border-gray-400 rounded hover:bg-gray-100">
+                {{ item }}
+              </button>
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <!-- Categorías simples -->
+        <ng-template #sinSubcategorias>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let item of seccion.opciones"
+              class="px-3 py-1 border border-gray-400 rounded hover:bg-gray-100">
+              {{ item }}
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </ng-container>
+  </div>
+</div>

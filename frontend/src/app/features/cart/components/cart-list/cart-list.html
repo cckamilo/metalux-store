@@ -1,0 +1,48 @@
+<!-- Contenedor principal del sidenav del carrito -->
+<!-- Posicionado fijo a la derecha, con animación para deslizar y sombra -->
+<div
+  class="fixed top-0 right-0 h-full w-80 z-40 bg-white shadow-lg transform transition-transform duration-300 overflow-y-auto"
+  [ngClass]="{ 'translate-x-full': !isOpen, 'translate-x-0': isOpen }"
+>
+  <!-- Encabezado del sidenav -->
+  <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+    <span class="text-lg font-semibold text-gray-800">Tu carrito</span>
+    
+    <!-- Botón para cerrar el sidenav -->
+    <button (click)="close()" class="text-xl">✕</button>
+  </div>
+
+  <!-- Contenido del carrito -->
+  <div class="p-4 space-y-4 text-sm text-gray-700">
+    
+    <!-- Itera sobre los productos del carrito -->
+    <div *ngFor="let item of cartItems()">
+      <div class="flex justify-between items-center">
+        
+        <!-- Información del producto -->
+        <div>
+          <p class="font-semibold">{{ item.name }}</p>
+          <p class="text-xs text-gray-500">Cantidad: {{ item.quantity }}</p>
+          <p class="text-xs text-gray-500">{{ formatearPrecio(item.price) }}</p>
+        </div>
+
+        <!-- Controles de cantidad -->
+        <div class="flex gap-2 items-center">
+          <!-- Botón para disminuir cantidad -->
+          <button class="text-lg px-2" (click)="decreaseQuantity(item)">−</button>
+          
+          <!-- Mostrar cantidad actual -->
+          <span>{{ item.quantity }}</span>
+
+          <!-- Botón para aumentar cantidad -->
+          <button class="text-lg px-2" (click)="increaseQuantity(item)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total del carrito -->
+    <div class="border-t pt-4 font-bold">
+      Total: {{ formatearPrecio(getTotalPrice()) }}
+    </div>
+  </div>
+</div>
