@@ -1,44 +1,62 @@
-
-<!-- Sidenav izquierdo -->
+<!-- Sidenav izquierdo con estilo oscuro y espaciado -->
 <div
-  class="fixed top-0 left-0 h-full w-96 z-40 bg-white shadow-lg transform transition-transform duration-300 overflow-y-auto"
-  [ngClass]="{ '-translate-x-full': !isOpen, 'translate-x-0': isOpen }">
-  <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200">
-    <span class="text-lg font-semibold text-gray-800">Filtros</span>
-    <button (click)="closeSidebar()" class="text-xl">✕</button>
-  </div>
+  class="fixed top-0 left-0 h-full w-80 z-[999] bg-gray-900 text-white shadow-xl transform transition-transform duration-300 overflow-y-auto font-sans"
+  [ngClass]="{ 'translate-x-0': isOpen, '-translate-x-full': !isOpen }">
 
-  <!-- Filtros -->
-  <div class="p-5 text-sm text-gray-800 space-y-6">
-    <!-- Secciones con *ngFor -->
-    <ng-container *ngFor="let seccion of filtroList">
-      <div>
-        <h2 class="font-semibold text-xs text-gray-600 mb-2 uppercase">{{ seccion.titulo }}</h2>
+  <!-- Botón de cerrar -->
+  <button (click)="onCloseClick()" class="absolute top-4 right-4 text-gray-300 hover:text-white z-[1000]">
+    <i data-lucide="x" class="w-6 h-6"></i>
+  </button>
 
-        <!-- Subcategorías si hay -->
-        <ng-container *ngIf="seccion.subcategorias; else sinSubcategorias">
-          <ng-container *ngFor="let sub of seccion.subcategorias">
-            <p class="text-xs text-gray-500 mb-1">{{ sub.nombre }}</p>
-            <div class="flex flex-wrap gap-2 mb-2">
-              <button *ngFor="let item of sub.opciones"
-                class="px-3 py-1 border border-gray-400 rounded hover:bg-gray-100">
-                {{ item }}
-              </button>
-            </div>
-          </ng-container>
-        </ng-container>
+  <!-- Contenido del menú -->
+  <div class="px-5 pt-6 pb-10">
+    <div *ngFor="let filtro of filtroList" class="mb-8">
 
-        <!-- Categorías simples -->
-        <ng-template #sinSubcategorias>
+      <!-- Título del grupo -->
+      <div class="flex items-center gap-2 mb-3">
+        <h3 class="text-xs font-medium text-gray-300 uppercase tracking-wide">
+          {{ filtro.title }}
+        </h3>
+      </div>
+
+      <!-- Subcategorías -->
+      <ng-container *ngIf="filtro.subcategories; else simpleOptions">
+        <div *ngFor="let sub of filtro.subcategories" class="mb-5 pl-3">
+          <p class="text-xs font-light text-gray-400 mb-2 tracking-wide">
+            {{ sub.name }}
+          </p>
           <div class="flex flex-wrap gap-2">
-            <button *ngFor="let item of seccion.opciones"
-              class="px-3 py-1 border border-gray-400 rounded hover:bg-gray-100">
-              {{ item }}
+            <button
+              *ngFor="let option of sub.options"
+              (click)="onCategoryClick(option)"
+              [ngClass]="{
+                'bg-white text-black': selectedCategories.includes(option),
+                'bg-gray-800 text-gray-200 hover:bg-gray-700': !selectedCategories.includes(option)
+              }"
+              class="px-3 py-1.5 text-xs border border-gray-600 rounded transition-colors duration-200"
+            >
+              {{ option }}
             </button>
           </div>
-        </ng-template>
-      </div>
-    </ng-container>
+        </div>
+      </ng-container>
+
+      <!-- Opciones simples -->
+      <ng-template #simpleOptions>
+        <div class="flex flex-wrap gap-2 pl-3">
+          <button
+            *ngFor="let option of filtro.options"
+            (click)="onCategoryClick(option)"
+            [ngClass]="{
+              'bg-white text-black': selectedCategories.includes(option),
+              'bg-gray-800 text-gray-200 hover:bg-gray-700': !selectedCategories.includes(option)
+            }"
+            class="px-3 py-1.5 text-xs border border-gray-600 rounded transition-colors duration-200"
+          >
+            {{ option }}
+          </button>
+        </div>
+      </ng-template>
+    </div>
   </div>
 </div>

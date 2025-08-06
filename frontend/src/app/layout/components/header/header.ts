@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, effect, inject, signal } from '@angular/core';
-import { Cart, CartItem } from '../../../features/cart/services/cart';
+import { AfterViewInit, Component, computed, effect, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Cart } from '../../../features/cart/services/cart';
 import { CartList } from '../../../features/cart/components/cart-list/cart-list';
-import { Sidenav } from '../../../layout/components/sidenav/sidenav';
 
 
 declare var lucide: any;
@@ -12,16 +11,19 @@ declare var lucide: any;
   selector: 'app-header',
   imports: [
     CommonModule,
-    CartList,
-    Sidenav
-
+    CartList
   ],
   templateUrl: './header.html'
 })
 export class Header implements AfterViewInit {
 
+ @Output() menuClicked = new EventEmitter<void>();
+
+  onToggleMenu() {
+    this.menuClicked.emit();
+  }
+
   showSearch = false;
-  isSidebarOpen = false;
   isCartSidebarOpen = false;
 
   public cart = inject(Cart);
@@ -30,31 +32,6 @@ export class Header implements AfterViewInit {
   totalItems = computed(() =>
     this.cart.getCartItems()().reduce((acc, item) => acc + item.quantity, 0)
   );
-
-  filtroList = [
-    {
-      titulo: 'Producto',
-      opciones: ['Pines', 'Fundas', 'SALE']
-    },
-    {
-      titulo: 'Tallas',
-      subcategorias: [
-        {
-          nombre: 'Superior',
-          opciones: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-        },
-        {
-          nombre: 'Inferior',
-          opciones: ['26', '28', '30', '32', '34', '36', '38']
-        }
-      ]
-    },
-    {
-      titulo: 'Géneros',
-      opciones: ['Rock', 'Black Metal', 'Death Metal', 'Heavy Metal', 'Thrash Metal']
-    }
-  ];
-
 
 
   ngAfterViewInit(): void {
@@ -66,22 +43,8 @@ export class Header implements AfterViewInit {
     setTimeout(() => lucide.createIcons(), 0); // Re-render icons si cambian
   }
 
-  toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
-  if (this.isSidebarOpen) {
-    this.isCartSidebarOpen = false;
-  }
-  }
-
-  closeSidebar() {
-    this.isSidebarOpen = false;
-  }
-
   toggleCartSidebar() {
     this.isCartSidebarOpen = !this.isCartSidebarOpen;
-  if (this.isCartSidebarOpen) {
-    this.isSidebarOpen = false;
-  }
   }
 
   closeCartSidebar() {

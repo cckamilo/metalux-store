@@ -1,22 +1,22 @@
 <!-- Header -->
-<header class="w-full bg-gray-900 text-white shadow-md fixed top-0 z-50">
-  <div class="w-full flex items-center justify-between px-4 py-3">
-   <!-- Ícono hamburguesa -->
-  <button (click)="toggleSidebar()" class="text-white text-2xl mr-4 flex items-center justify-center">
-    <i data-lucide="menu"></i>
-  </button>
+<header class="w-full bg-gray-900 text-white shadow-md fixed top-0 z-30">
+  <div class="w-full flex items-center justify-between px-4 py-2 min-h-[52px]">
+      <!-- Ícono hamburguesa -->
+    <button (click)="onToggleMenu()" class="text-white text-xl mr-4 flex items-center justify-center">
+      <i data-lucide="menu"></i>
+    </button>
 
-  <!-- Logo Metaluxe -->
-  <div class="text-3xl font-bold flex items-center space-x-1">
-    <span class="text-red-500 font-['UnifrakturCook']">META</span>
-    <span class="text-white font-['UnifrakturCook']">LUXE</span>
-  </div>
+    <!-- Logo Metaluxe -->
+    <div class="text-2xl font-bold flex items-center space-x-1 leading-tight">
+      <span class="text-red-500 font-['UnifrakturCook']">META</span>
+      <span class="text-white font-['UnifrakturCook']">LUXE</span>
+    </div>
 
     <!-- Iconos a la derecha -->
-    <div class="flex items-center gap-4 ml-auto pr-2">
+    <div class="flex items-center gap-3 ml-auto pr-2">
       <!-- Lupa -->
       <button (click)="toggleSearch()" class="hover:text-gray-300">
-        <i data-lucide="search" class="w-6 h-6"></i>
+        <i data-lucide="search" class="w-5 h-5"></i>
       </button>
 
       <!-- Input de búsqueda (condicional) -->
@@ -25,7 +25,7 @@
 
       <!-- Carrito -->
       <div (click)="toggleCartSidebar()" class="relative">
-        <i data-lucide="shopping-cart" class="w-6 h-6 hover:text-gray-300 cursor-pointer"></i>
+        <i data-lucide="shopping-cart" class="w-5 h-5 hover:text-gray-300 cursor-pointer"></i>
         <span *ngIf="totalItems() > 0"
           class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
           {{ totalItems() }}
@@ -33,14 +33,13 @@
       </div>
 
       <!-- Usuario -->
-      <i data-lucide="user" class="w-6 h-6 hover:text-gray-300 cursor-pointer"></i>
+      <i data-lucide="user" class="w-5 h-5 hover:text-gray-300 cursor-pointer"></i>
     </div>
   </div>
 </header>
 <!-- Overlay -->
-<div *ngIf="isSidebarOpen" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 transition-opacity duration-300"
-  (click)="closeSidebar()"></div>
-<app-sidenav [isOpen]="isSidebarOpen" [filtroList]="filtroList" (close)="closeCartSidebar()"></app-sidenav>
+<div *ngIf="isCartSidebarOpen" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" (click)="closeCartSidebar()">
+</div>
 <!-- Overlay para el carrito -->
 <div *ngIf="isCartSidebarOpen" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" (click)="closeCartSidebar()">
 </div>
