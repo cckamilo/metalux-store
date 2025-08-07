@@ -27,8 +27,6 @@ export class MainLayout {
 
   onCategorySelected(category: string[]) {
     console.log('Categoría seleccionada:', category);
-    // Aquí puedes comunicarte con Home, por ejemplo, mediante un servicio o signal
-    // this.closeSidebar();
   }
 
   onBackdropClick(event: MouseEvent) {

@@ -14,10 +14,15 @@ import { MenuFilter } from '../../core/services/menu-filter';
 export class Home {
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
-  constructor(private cart: Cart,
+  // Constructor con dependencias para carrito, detección de cambios y servicio de filtros
+  constructor(
+    private cart: Cart,
     private cdr: ChangeDetectorRef,
-    private filterService: MenuFilter) { }
+    private filterService: MenuFilter
+  ) { }
 
+  selectedSort = 'relevance';
+  
   sortOptions = [
     { label: 'Más relevantes', value: 'relevance' },
     { label: 'Menor precio', value: 'price_asc' },
@@ -49,6 +54,11 @@ export class Home {
       genres: {
         id: 1,
         name: "Black Metal"
+      },
+      offer: {
+        title: '-20%',
+        description: 'Solo esta semana',
+        discountedPrice: 7900
       }
     },
     {
@@ -71,6 +81,11 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
+      },
+      offer: {
+        title: '-20%',
+        description: 'Solo esta semana',
+        discountedPrice: 7900
       }
     },
     {
@@ -94,6 +109,11 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
+      },
+      offer: {
+        title: '-20%',
+        description: 'Solo esta semana',
+        discountedPrice: 8800
       }
     },
     {
@@ -117,7 +137,8 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
-      }
+      },
+      offer: null
     },
     {
       id: 5,
@@ -140,7 +161,8 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
-      }
+      },
+      offer: null
     },
     {
       id: 6,
@@ -165,7 +187,8 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
-      }
+      },
+      offer: null
     },
     {
       id: 7,
@@ -190,7 +213,8 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
-      }
+      },
+      offer: null
     },
     {
       id: 8,
@@ -215,7 +239,8 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
-      }
+      },
+      offer: null
     },
     {
       id: 9,
@@ -240,25 +265,30 @@ export class Home {
       genres: {
         id: 1,
         name: "Death Metal"
-      }
+      },
+      offer: null
     }
 
   ];
 
-  selectedSort = 'relevance';
+  // Control de scroll y paginación
   isLoadingMore = false;
   visibleProducts: any[] = [];
   itemsPerPage = 9;
   currentPage = 1;
-  selectedFilters: string[] = [];
-  allProducts = this.products; // copia original
-  filteredProducts: any[] = []; // productos ya filtrados
 
+  // Filtros seleccionados y productos filtrados
+  selectedFilters: string[] = [];
+  allProducts = this.products; // copia original sin filtrar
+  filteredProducts: any[] = []; // productos luego de filtros
+
+  // Hook del ciclo de vida: inicialización después del render
   ngAfterViewInit(): void {
-    this.filteredProducts = [...this.products]; // Cargar todo al inicio
+    this.filteredProducts = [...this.products];
     this.loadMoreProducts();
     this.cdr.detectChanges();
 
+    // Escucha cambios de filtros desde el servicio y recarga productos
     this.filterService.filters$.subscribe((filters: string[]) => {
       this.selectedFilters = filters;
       this.applyFilters();
@@ -267,9 +297,9 @@ export class Home {
       this.currentPage = 1;
       this.loadMoreProducts();
     });
-
   }
 
+  // Detecta scroll para carga infinita
   onScroll() {
     const el = this.scrollContainer.nativeElement;
     const limite = el.scrollHeight - el.clientHeight - 100;
@@ -279,6 +309,7 @@ export class Home {
     }
   }
 
+  // Carga más productos en la vista visible
   loadMoreProducts() {
     if (this.isLoadingMore) return;
     if (this.visibleProducts.length >= this.filteredProducts.length) return;
@@ -292,9 +323,10 @@ export class Home {
       );
       this.visibleProducts = [...this.visibleProducts, ...nextLote];
       this.isLoadingMore = false;
-    }, 500);
+    }, 300);
   }
 
+  // Agrega producto al carrito
   addToCart(product: any) {
     const item: CartItem = {
       id: product.id,
@@ -305,90 +337,100 @@ export class Home {
     this.cart.addItem(item);
   }
 
+  // Formatear precio en pesos colombianos
   formatPrice(price: number): string {
     return '$' + price.toLocaleString('es-CO');
   }
 
+  // Cambia a la siguiente imagen del producto
   nextImage(product: any): void {
     product.currentimage = (product.currentimage + 1) % product.images.length;
   }
 
+  // Cambia a la imagen anterior del producto
   previousImage(product: any): void {
     product.currentimage =
       (product.currentimage - 1 + product.images.length) % product.images.length;
   }
 
+  // Cambia el orden seleccionado
   onSortChange() {
     this.applyLocalSort();
+    this.visibleProducts = [];
+    this.currentPage = 1;
+    this.loadMoreProducts();
   }
 
+  // Aplica lógica de ordenamiento local
   applyLocalSort() {
     switch (this.selectedSort) {
       case 'price_asc':
-        this.visibleProducts.sort((a, b) => a.price - b.price);
+        this.filteredProducts.sort((a, b) => this.getProductPrice(a) - this.getProductPrice(b));
         break;
       case 'price_desc':
-        this.visibleProducts.sort((a, b) => b.price - a.price);
+        this.filteredProducts.sort((a, b) => this.getProductPrice(b) - this.getProductPrice(a));
         break;
       case 'newest':
-        this.visibleProducts.sort((a, b) =>
+        this.filteredProducts.sort((a, b) =>
           new Date(b.fechaCreacion || '').getTime() - new Date(a.fechaCreacion || '').getTime()
         );
         break;
       default:
-        this.visibleProducts.sort((a, b) => a.id - b.id);
+        this.filteredProducts.sort((a, b) => a.id - b.id);
         break;
     }
   }
 
+  // Devuelve el precio correcto del producto (con descuento si aplica)
+  getProductPrice(product: any): number {
+    return product.offer?.discountedPrice ?? product.price;
+  }
+
+  // Valida si el producto cumple con los filtros seleccionados
   matchesFilter(product: any, filters: string[]): boolean {
-    // Clasificamos filtros por tipo (basado en los posibles valores del menú)
-   const { categorias, tallas, generos } = this.filterService.filtros;
+    const { categorias, tallas, generos } = this.filterService.filtros;
 
     const filtrosCategoria = filters.filter(f => categorias.includes(f));
     const filtrosTalla = filters.filter(f => tallas.includes(f));
     const filtrosGenero = filters.filter(f => generos.includes(f));
 
-    // Validar por categoría (solo si hay filtros de categoría)
     if (filtrosCategoria.length > 0 && !filtrosCategoria.includes(product.category?.name)) {
       return false;
     }
 
-    // Validar por género (solo si hay filtros de género)
     if (filtrosGenero.length > 0 && !filtrosGenero.includes(product.genres?.name)) {
       return false;
     }
 
-    // Validar por tallas (solo si hay filtros de talla)
     if (filtrosTalla.length > 0) {
       const tieneTalla = product.sizes?.some((size: string) => filtrosTalla.includes(size));
-      if (!tieneTalla) {
-        return false;
-      }
+      if (!tieneTalla) return false;
     }
 
-    // Si pasa todas las validaciones, se incluye el producto
     return true;
   }
 
-
+  // Aplica filtros cuando cambian desde el componente
   onFilterChange(selected: string[]) {
     this.selectedFilters = selected;
     this.applyFilters();
 
-    // Reiniciar la paginación con los productos filtrados
     this.visibleProducts = [];
     this.currentPage = 1;
     this.loadMoreProducts();
   }
+
+  // Aplica filtros y ordenamiento actuales
   applyFilters() {
     if (this.selectedFilters.length === 0) {
-      this.filteredProducts = this.allProducts;
-      return;
+      this.filteredProducts = [...this.allProducts];
+    } else {
+      this.filteredProducts = this.allProducts.filter(product =>
+        this.matchesFilter(product, this.selectedFilters)
+      );
     }
 
-    this.filteredProducts = this.allProducts.filter(product =>
-      this.matchesFilter(product, this.selectedFilters)
-    );
+    this.applyLocalSort();
   }
+
 }
