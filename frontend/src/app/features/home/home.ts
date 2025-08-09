@@ -38,7 +38,7 @@ export class Home {
       color: 'Amarillo-Negro',
       price: 9900,
       description: "",
-      stock: 20,
+      stock: 0,
       images: [
         'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
         'https://http2.mlstatic.com/D_NQ_NP_2X_867920-MCO49256892054_032022-F.webp',
@@ -59,7 +59,8 @@ export class Home {
         title: '-20%',
         description: 'Solo esta semana',
         discountedPrice: 7900
-      }
+      },
+      publishDate: null
     },
     {
       id: 2,
@@ -86,7 +87,8 @@ export class Home {
         title: '-20%',
         description: 'Solo esta semana',
         discountedPrice: 7900
-      }
+      }, 
+      publishDate: '2025-07-20'
     },
     {
       id: 3,
@@ -114,7 +116,8 @@ export class Home {
         title: '-20%',
         description: 'Solo esta semana',
         discountedPrice: 8800
-      }
+      },
+      publishDate: '2025-07-20'
     },
     {
       id: 4,
@@ -138,7 +141,8 @@ export class Home {
         id: 1,
         name: "Death Metal"
       },
-      offer: null
+      offer: null,
+      publishDate: null
     },
     {
       id: 5,
@@ -162,7 +166,8 @@ export class Home {
         id: 1,
         name: "Death Metal"
       },
-      offer: null
+      offer: null,
+      publishDate: null
     },
     {
       id: 6,
@@ -188,7 +193,8 @@ export class Home {
         id: 1,
         name: "Death Metal"
       },
-      offer: null
+      offer: null,
+      publishDate: null
     },
     {
       id: 7,
@@ -214,7 +220,8 @@ export class Home {
         id: 1,
         name: "Death Metal"
       },
-      offer: null
+      offer: null,
+      publishDate: null
     },
     {
       id: 8,
@@ -240,7 +247,8 @@ export class Home {
         id: 1,
         name: "Death Metal"
       },
-      offer: null
+      offer: null,
+      publishDate: null
     },
     {
       id: 9,
@@ -266,7 +274,8 @@ export class Home {
         id: 1,
         name: "Death Metal"
       },
-      offer: null
+      offer: null,
+      publishDate: null
     }
 
   ];
@@ -432,5 +441,20 @@ export class Home {
 
     this.applyLocalSort();
   }
+
+  // Nuevo método para verificar si un producto es nuevo (menos de 30 días)
+  isProductNew(product: any): boolean {
+    if (!product.publishDate) {
+      return false; // Si no hay fecha de publicación, no es nuevo.
+    }
+
+    const publishDate = new Date(product.publishDate);
+    const today = new Date();
+    const diffTime = today.getTime() - publishDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Convierte milisegundos a días
+
+    return diffDays <= 30; // Devuelve true si la diferencia es de 30 días o menos.
+  }
+
 
 }
