@@ -36,17 +36,24 @@ export class Cart {
   }
 
   addItem(item: CartItem) {
+    console.log('Se intenta agregar el siguiente item:', item);
     const items = this.cartItems();
     const existing = items.find(p => p.id === item.id);
 
     if (existing) {
-      existing.quantity += 1;
+      // Si el ítem existe, sumamos la nueva cantidad a la cantidad existente
+      this.cartItems.update(currentItems =>
+        currentItems.map(p =>
+          p.id === item.id
+            ? { ...p, quantity: p.quantity + item.quantity }
+            : p
+        )
+      );
     } else {
-      items.push({ ...item, quantity: 1 });
+      // Si el ítem es nuevo, lo agregamos con la cantidad seleccionada
+      this.cartItems.set([...items, { ...item }]);
+      console.log('Estado actual del carrito:', this.cartItems());
     }
-
-    this.cartItems.set([...items]);
-    this.getStoredCartItems();
   }
 
   removeItem(productId: number) {
@@ -66,13 +73,20 @@ export class Cart {
     this.cartItems.set([]);
   }
 
-  getTotalCount(): number {
+   getTotalCount(): number {
     return this.cartItems().reduce((acc, item) => acc + item.quantity, 0);
   }
 
   readonly total = computed(() =>
     this.cartItems().reduce((acc, item) => acc + item.price * item.quantity, 0)
   );
+
+   // Nuevo método para eliminar un producto por completo del carrito
+  removeProduct(productId: number) {
+    this.cartItems.update(items =>
+      items.filter(item => item.id !== productId)
+    );
+  }
 
 
 }

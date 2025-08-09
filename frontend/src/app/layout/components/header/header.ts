@@ -17,7 +17,7 @@ declare var lucide: any;
 })
 export class Header implements AfterViewInit {
 
- @Output() menuClicked = new EventEmitter<void>();
+  @Output() menuClicked = new EventEmitter<void>();
 
   onToggleMenu() {
     this.menuClicked.emit();
@@ -29,9 +29,7 @@ export class Header implements AfterViewInit {
   public cart = inject(Cart);
   total = this.cart.total;
 
-  totalItems = computed(() =>
-    this.cart.getCartItems()().reduce((acc, item) => acc + item.quantity, 0)
-  );
+  totalItems = computed(() => this.cart.getTotalCount());
 
 
   ngAfterViewInit(): void {

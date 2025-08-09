@@ -1,4 +1,5 @@
-import { Component, inject, Input } from '@angular/core';
+declare var lucide: any;
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { Cart, CartItem } from '../../services/cart';
 import { CommonModule } from '@angular/common';
 
@@ -11,11 +12,34 @@ import { CommonModule } from '@angular/common';
 })
 export class CartList {
 
-  @Input() isOpen: boolean = false;
-  @Input() close!: () => void;
+  private _isOpen: boolean = false;
+
+  @Input()
+  set isOpen(value: boolean) {
+    this._isOpen = value;
+    // Este es el único código que necesitamos aquí
+    if (value) {
+      setTimeout(() => {
+        lucide.createIcons();
+      }, 0);
+    }
+  }
+
+  get isOpen(): boolean {
+    return this._isOpen;
+  }
+
+  @Output() close = new EventEmitter<void>();
+
+
+
+  onClose() {
+    this.close.emit();
+  }
 
   private cart = inject(Cart);
   cartItems = this.cart.getCartItems();
+    totalPrice = this.cart.total;
 
   increaseQuantity(item: CartItem) {
     this.cart.addItem(item);
@@ -31,5 +55,17 @@ export class CartList {
 
   getTotalPrice(): number {
     return this.cart.getCartItems()().reduce((total, item) => total + item.price * item.quantity, 0);
+  }
+
+  onClearCart() {
+    if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+      this.cart.clearCart();
+    }
+  }
+
+  removeProduct(id: number) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      this.cart.removeProduct(id);
+    }
   }
 }

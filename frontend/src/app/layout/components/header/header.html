@@ -1,20 +1,14 @@
 <header class="w-full bg-white text-gray-900 shadow-sm border-b border-gray-200 fixed top-0 z-30">
   <div class="w-full flex items-center justify-between px-4 py-1 min-h-[44px]">
-    <!-- Ícono hamburguesa -->
     <button (click)="onToggleMenu()" class="text-gray-900 text-xl mr-4 flex items-center justify-center">
       <i data-lucide="menu"></i>
     </button>
 
-    <!-- Logo -->
-  
+    <div class="flex items-center gap-2">
+      <img src="assets/images/img-1.png" alt="Metaluxe Logo" class="h-8 object-contain" />
+      <span class="text-xl font-bold" style="font-family: 'Fredoka', sans-serif;">Metaluxe</span>
+    </div>
 
-    <!-- Logo Metaluxe en texto -->
-<div class="flex items-center gap-2">
-    <img src="assets/images/img-1.png" alt="Metaluxe Logo" class="h-8 object-contain" />
-  <span class="text-xl font-bold" style="font-family: 'Fredoka', sans-serif;">Metaluxe</span>
-</div>
-
-    <!-- Iconos a la derecha -->
     <div class="flex items-center gap-3 ml-auto pr-2">
       <button (click)="toggleSearch()" class="hover:text-gray-600">
         <i data-lucide="search" class="w-5 h-5"></i>
@@ -23,9 +17,10 @@
       <input *ngIf="showSearch" type="text" placeholder="Buscar..."
         class="bg-gray-100 text-black border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring focus:ring-blue-500" />
 
-      <div (click)="toggleCartSidebar()" class="relative">
-        <i data-lucide="shopping-cart" class="w-5 h-5 hover:text-gray-600 cursor-pointer"></i>
-        <span *ngIf="totalItems() > 0"
+      <div (click)="toggleCartSidebar()" class="relative cursor-pointer">
+        <i data-lucide="shopping-cart" class="w-5 h-5 hover:text-gray-600"></i>
+
+        <span *ngIf="totalItems() !== null && totalItems() !== undefined && totalItems() > 0"
           class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
           {{ totalItems() }}
         </span>
@@ -35,3 +30,5 @@
     </div>
   </div>
 </header>
+
+<app-cart-list [isOpen]="isCartSidebarOpen" (close)="closeCartSidebar()"></app-cart-list>

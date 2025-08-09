@@ -4,11 +4,12 @@ import { Cart, CartItem } from '../cart/services/cart';
 import { ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MenuFilter } from '../../core/services/menu-filter';
+import { ProductDetailModal } from '../../shared/components/product-detail-modal/product-detail-modal';
 
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProductDetailModal],
   templateUrl: './home.html'
 })
 export class Home {
@@ -22,7 +23,10 @@ export class Home {
   ) { }
 
   selectedSort = 'relevance';
-  
+  // Propiedades para el modal
+  showModal = false;
+  selectedProduct: any;
+
   sortOptions = [
     { label: 'Más relevantes', value: 'relevance' },
     { label: 'Menor precio', value: 'price_asc' },
@@ -34,10 +38,9 @@ export class Home {
     {
       id: 1,
       name: 'Pin Rock Al Parque',
-      material: 'Metal',
       color: 'Amarillo-Negro',
       price: 9900,
-      description: "",
+      description: "Exprésate con estilo y pasión por la música pesada con este pin metálico de alta calidad, diseñado especialmente para fans de las mejores bandas de metal. Fabricado en metal resistente con acabado esmaltado, este pin destaca por su detalle preciso y durabilidad. Perfecto para lucir en chaquetas, mochilas o gorras, es el accesorio ideal para cualquier headbanger que quiera mostrar su amor por el metal.",
       stock: 0,
       images: [
         'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
@@ -46,9 +49,11 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: "Pines"
+
       },
       sizes: [],
       genres: {
@@ -60,20 +65,28 @@ export class Home {
         description: 'Solo esta semana',
         discountedPrice: 7900
       },
-      publishDate: null
+      publishDate: null,
+      specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 2,
       name: 'Pin Joy Division',
-      material: 'Metal',
       color: 'Negro-Blanco',
       price: 9900,
-      description: "",
+      description: "Exprésate con estilo y pasión por la música pesada con este pin metálico de alta calidad, diseñado especialmente para fans de las mejores bandas de metal. Fabricado en metal resistente con acabado esmaltado, este pin destaca por su detalle preciso y durabilidad. Perfecto para lucir en chaquetas, mochilas o gorras, es el accesorio ideal para cualquier headbanger que quiera mostrar su amor por el metal.",
       stock: 20,
       images: [
         'https://http2.mlstatic.com/D_NQ_NP_2X_705248-MLA87318121302_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: "Pines"
@@ -87,8 +100,16 @@ export class Home {
         title: '-20%',
         description: 'Solo esta semana',
         discountedPrice: 7900
-      }, 
-      publishDate: '2025-07-20'
+      },
+      publishDate: '2025-07-20',
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 3,
@@ -103,6 +124,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_906741-MLA87652320287_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: 'Pines'
@@ -117,7 +139,15 @@ export class Home {
         description: 'Solo esta semana',
         discountedPrice: 8800
       },
-      publishDate: '2025-07-20'
+      publishDate: '2025-07-20',
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 4,
@@ -132,6 +162,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_705880-MLA88123250371_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: 'Pines'
@@ -142,7 +173,15 @@ export class Home {
         name: "Death Metal"
       },
       offer: null,
-      publishDate: null
+      publishDate: null,
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 5,
@@ -157,6 +196,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: 'Pines'
@@ -167,7 +207,15 @@ export class Home {
         name: "Death Metal"
       },
       offer: null,
-      publishDate: null
+      publishDate: null,
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 6,
@@ -184,6 +232,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: 'Pines'
@@ -194,7 +243,15 @@ export class Home {
         name: "Death Metal"
       },
       offer: null,
-      publishDate: null
+      publishDate: null,
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 7,
@@ -211,6 +268,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 1,
         name: 'Pines'
@@ -221,7 +279,15 @@ export class Home {
         name: "Death Metal"
       },
       offer: null,
-      publishDate: null
+      publishDate: null,
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 8,
@@ -238,6 +304,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 2,
         name: 'Fundas'
@@ -248,7 +315,15 @@ export class Home {
         name: "Death Metal"
       },
       offer: null,
-      publishDate: null
+      publishDate: null,
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     },
     {
       id: 9,
@@ -265,6 +340,7 @@ export class Home {
         'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
       ],
       currentimage: 0,
+      selectedQuantity: 1,
       category: {
         id: 2,
         name: 'Fundas'
@@ -275,7 +351,15 @@ export class Home {
         name: "Death Metal"
       },
       offer: null,
-      publishDate: null
+      publishDate: null,
+       specifications: {
+        material: "Metal",
+        color: "Yellow-Black",
+        closure: "Butterfly clutch",
+        diameter: "3 cm",
+        width: "3 cm",
+        height: "3 cm"
+      }
     }
 
   ];
@@ -336,12 +420,12 @@ export class Home {
   }
 
   // Agrega producto al carrito
-  addToCart(product: any) {
+  addToCart(product: any, quantity: number) {
     const item: CartItem = {
       id: product.id,
       name: product.name,
       price: product.price,
-      quantity: 1,
+      quantity: Number(quantity),
     };
     this.cart.addItem(item);
   }
@@ -456,5 +540,16 @@ export class Home {
     return diffDays <= 30; // Devuelve true si la diferencia es de 30 días o menos.
   }
 
+  // Método para abrir el modal
+  openModal(product: any) {
+    this.selectedProduct = product;
+    this.showModal = true;
+  }
+
+  // Método para cerrar el modal
+  closeModal() {
+    this.showModal = false;
+    this.selectedProduct = null;
+  }
 
 }

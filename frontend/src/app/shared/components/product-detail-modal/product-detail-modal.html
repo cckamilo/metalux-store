@@ -1,0 +1,62 @@
+<div *ngIf="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+  <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full relative text-gray-900">
+    <button (click)="closeModal()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-800 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    
+    <h2 class="text-2xl font-bold mb-2">{{ product?.name }}</h2>
+    <div *ngIf="product">
+      <p class="mb-4">{{ product.description }}</p>
+
+      <div *ngIf="product.specifications" class="mb-4">
+        <h3 class="text-lg font-bold mb-2">Especificaciones:</h3>
+        <ul class="list-disc list-inside space-y-1 text-gray-700">
+          <li *ngIf="product.specifications.material">
+            <span class="font-semibold">Material:</span> {{ product.specifications.material }}
+          </li>
+          <li *ngIf="product.specifications.color">
+            <span class="font-semibold">Color:</span> {{ product.specifications.color }}
+          </li>
+          <li *ngIf="product.specifications.closure">
+            <span class="font-semibold">Cierre:</span> {{ product.specifications.closure }}
+          </li>
+          <li *ngIf="product.specifications.diameter">
+            <span class="font-semibold">Diámetro:</span> {{ product.specifications.diameter }}
+          </li>
+          <li *ngIf="product.specifications.width">
+            <span class="font-semibold">Ancho:</span> {{ product.specifications.width }}
+          </li>
+          <li *ngIf="product.specifications.height">
+            <span class="font-semibold">Alto:</span> {{ product.specifications.height }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="flex items-center gap-2 mb-2">
+        <span class="font-bold">Precio:</span>
+        <p class="text-lg font-semibold">{{ formatPrice(product.price) }}</p>
+        <p *ngIf="product.offer" class="text-sm font-normal text-gray-500 line-through">
+          {{ formatPrice(product.price) }}
+        </p>
+      </div>
+      
+      <p *ngIf="product.stock > 0" class="mb-2">
+        <span class="font-bold">Stock disponible:</span> {{ product.stock }}
+      </p>
+      <p *ngIf="product.stock === 0" class="text-red-600 font-bold">
+        ¡Producto agotado!
+      </p>
+      
+      <button (click)="addToCart(product)"
+        [disabled]="product.stock === 0"
+        [class.bg-gray-400]="product.stock === 0"
+        [class.hover:bg-gray-400]="product.stock === 0"
+        [class.cursor-not-allowed]="product.stock === 0"
+        class="mt-4 w-full bg-gray-900 text-white py-2 text-sm font-medium rounded-sm hover:bg-black transition">
+        {{ product.stock === 0 ? 'AGOTADO' : 'AÑADIR AL CARRITO' }}
+      </button>
+    </div>
+  </div>
+</div>

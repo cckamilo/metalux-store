@@ -1,48 +1,47 @@
-<!-- Contenedor principal del sidenav del carrito -->
-<!-- Posicionado fijo a la derecha, con animación para deslizar y sombra -->
-<div
-  class="fixed top-0 right-0 h-full w-80 z-40 bg-white shadow-lg transform transition-transform duration-300 overflow-y-auto"
-  [ngClass]="{ 'translate-x-full': !isOpen, 'translate-x-0': isOpen }"
->
-  <!-- Encabezado del sidenav -->
-  <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200">
-    <span class="text-lg font-semibold text-gray-800">Tu carrito</span>
-    
-    <!-- Botón para cerrar el sidenav -->
-    <button (click)="close()" class="text-xl">✕</button>
-  </div>
+<div *ngIf="isOpen" (click)="onClose()" class="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ease-out">
 
-  <!-- Contenido del carrito -->
-  <div class="p-4 space-y-4 text-sm text-gray-700">
-    
-    <!-- Itera sobre los productos del carrito -->
-    <div *ngFor="let item of cartItems()">
-      <div class="flex justify-between items-center">
+  <div (click)="$event.stopPropagation()"
+    class="fixed top-0 right-0 h-full w-96 z-40 bg-white shadow-lg transform transition-transform duration-300 overflow-y-auto"
+    [ngClass]="{ 'translate-x-full': !isOpen, 'translate-x-0': isOpen }">
+
+    <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+      <span class="text-lg font-semibold text-gray-800">Tu carrito</span>
+
+      <div class="flex items-center gap-4">
+        <button (click)="onClearCart()" class="text-gray-500 hover:text-red-500">
+          <i data-lucide="trash-2" class="w-5 h-5"></i>
+        </button>
         
-        <!-- Información del producto -->
-        <div>
+        <button (click)="onClose()" class="text-xl">✕</button>
+      </div>
+    </div>
+
+    <div class="p-4 space-y-4 text-sm text-gray-700">
+
+      <div *ngFor="let item of cartItems()" class="flex items-center justify-between">
+        
+        <div class="flex-grow">
           <p class="font-semibold">{{ item.name }}</p>
           <p class="text-xs text-gray-500">Cantidad: {{ item.quantity }}</p>
           <p class="text-xs text-gray-500">{{ formatearPrecio(item.price) }}</p>
         </div>
 
-        <!-- Controles de cantidad -->
-        <div class="flex gap-2 items-center">
-          <!-- Botón para disminuir cantidad -->
-          <button class="text-lg px-2" (click)="decreaseQuantity(item)">−</button>
-          
-          <!-- Mostrar cantidad actual -->
-          <span>{{ item.quantity }}</span>
+        <div class="flex items-center gap-2">
+            <button class="text-lg px-2" (click)="decreaseQuantity(item)">−</button>
 
-          <!-- Botón para aumentar cantidad -->
-          <button class="text-lg px-2" (click)="increaseQuantity(item)">+</button>
+            <span>{{ item.quantity }}</span>
+
+            <button class="text-lg px-2" (click)="increaseQuantity(item)">+</button>
+
+            <button (click)="removeProduct(item.id)" class="text-red-500 hover:text-red-700">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
         </div>
       </div>
-    </div>
 
-    <!-- Total del carrito -->
-    <div class="border-t pt-4 font-bold">
-      Total: {{ formatearPrecio(getTotalPrice()) }}
+      <div class="border-t pt-4 font-bold">
+        Total: {{ formatearPrecio(totalPrice()) }}
+      </div>
     </div>
   </div>
 </div>
