@@ -3,7 +3,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Cart, CartItem } from '../cart/services/cart';
 import { ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MenuFilter } from '../../core/services/menu-filter';
+import { MenuFilter } from '../../core/services/menufilter/menu-filter';
 import { ProductDetailModal } from '../../shared/components/product-detail-modal/product-detail-modal';
 
 @Component({
@@ -73,7 +73,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 2,
@@ -109,7 +110,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 3,
@@ -147,7 +149,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 4,
@@ -181,7 +184,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 5,
@@ -215,7 +219,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 6,
@@ -251,7 +256,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 7,
@@ -287,7 +293,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 8,
@@ -323,7 +330,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     },
     {
       id: 9,
@@ -359,7 +367,8 @@ export class Home {
         diameter: "3 cm",
         width: "3 cm",
         height: "3 cm"
-      }
+      },
+       enabled: true // ✅ Este producto está visible en la tienda
     }
 
   ];

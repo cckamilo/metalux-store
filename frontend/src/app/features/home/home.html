@@ -19,98 +19,101 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
     <!-- Tarjeta -->
-    <div *ngFor="let producto of visibleProducts" class="w-full bg-white rounded overflow-hidden flex flex-col">
+    <!-- 1. El *ngFor se mueve a un <ng-container> -->
+    <ng-container *ngFor="let producto of visibleProducts">
 
-      <!-- Imagen fija -->
-      <div class="relative w-full aspect-[3/3.2] overflow-hidden">
-        <img [src]="producto.images[producto.currentimage]" alt="Producto"
-          class="w-full h-full object-cover transition-all duration-[1200ms] ease-in-out" />
-        <div *ngIf="isProductNew(producto)"
-          class="absolute top-2 left-2 bg-green-500 text-white text-xs px-3 py-1 rounded-sm font-bold shadow z-20">
-          NUEVO
+      <!-- 2. El *ngIf se queda en el div de la tarjeta -->
+      <div *ngIf="producto.enabled" class="w-full bg-white rounded overflow-hidden flex flex-col">
+        <!-- Contenido de la tarjeta -->
+        <div class="relative w-full aspect-[3/3.2] overflow-hidden">
+          <img [src]="producto.images[producto.currentimage]" alt="Producto"
+            class="w-full h-full object-cover transition-all duration-[1200ms] ease-in-out" />
+          <div *ngIf="isProductNew(producto)"
+            class="absolute top-2 left-2 bg-green-500 text-white text-xs px-3 py-1 rounded-sm font-bold shadow z-20">
+            NUEVO
+          </div>
+          <div *ngIf="producto.stock === 0"
+            class="absolute top-2 right-2 bg-gray-900 text-white text-xs px-3 py-1 rounded-sm font-bold shadow z-20">
+            AGOTADO
+          </div>
+          <!-- Flecha izquierda -->
+          <button (click)="previousImage(producto)"
+            class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <!-- Flecha derecha -->
+          <button (click)="nextImage(producto)"
+            class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <!-- Oferta -->
+          <div *ngIf="producto.offer"
+            class="absolute bottom-2 right-2 bg-red-500 text-white text-xs px-3 py-1 rounded font-bold shadow">
+            {{ producto.offer.title || 'OFERTA' }}
+          </div>
+
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <div *ngFor="let image of producto.images; let i = index" (click)="producto.currentimage = i"
+              class="w-2 h-2 rounded-full cursor-pointer transition-colors duration-300 hover:bg-black"
+              [class.bg-black]="i === producto.currentimage" [class.bg-gray-200]="i !== producto.currentimage">
+            </div>
+          </div>
         </div>
-        <div *ngIf="producto.stock === 0"
-          class="absolute top-2 right-2 bg-gray-900 text-white text-xs px-3 py-1 rounded-sm font-bold shadow z-20">
-          AGOTADO
-        </div>
-        <!-- Flecha izquierda -->
-        <button (click)="previousImage(producto)"
-          class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
 
-        <!-- Flecha derecha -->
-        <button (click)="nextImage(producto)"
-          class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        <div class="px-3 pt-1 pb-2 flex flex-col justify-between flex-1 -mt-2">
+          <div>
+            <h3 class="text-sm font-medium text-gray-700 leading-tight">
+              {{ producto.name }}
+            </h3>
+          </div>
 
-        <!-- Oferta -->
-        <div *ngIf="producto.offer"
-          class="absolute bottom-2 right-2 bg-red-500 text-white text-xs px-3 py-1 rounded font-bold shadow">
-          {{ producto.offer.title || 'OFERTA' }}
-        </div>
+          <div class="flex items-center gap-2 mt-1">
+            <a class="flex items-center gap-2">
+              <p class="text-sm font-bold text-gray-900">
+                {{ formatPrice(producto.offer ? producto.offer.discountedPrice : producto.price) }}
+              </p>
+              <p *ngIf="producto.offer" class="text-sm font-normal text-gray-400 line-through">
+                {{ formatPrice(producto.price) }}
+              </p>
+            </a>
 
+            <a (click)="openModal(producto)" class="ml-auto text-gray-500 hover:text-black transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span class="sr-only">Ver detalles</span>
+            </a>
+          </div>
 
-        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-          <div *ngFor="let image of producto.images; let i = index" (click)="producto.currentimage = i"
-            class="w-2 h-2 rounded-full cursor-pointer transition-colors duration-300 hover:bg-black"
-            [class.bg-black]="i === producto.currentimage" [class.bg-gray-200]="i !== producto.currentimage">
+          <div class="mt-2 flex items-center gap-2">
+            <select [(ngModel)]="producto.selectedQuantity"
+              class="w-1/3 bg-gray-100 text-gray-900 text-sm py-2 px-2 rounded-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black">
+              <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
+            </select>
+
+            <button (click)="addToCart(producto, producto.selectedQuantity)" [disabled]="producto.stock === 0"
+              [class.bg-gray-400]="producto.stock === 0" [class.hover:bg-gray-400]="producto.stock === 0"
+              [class.cursor-not-allowed]="producto.stock === 0"
+              class="w-2/3 bg-gray-900 text-white py-2 text-sm font-medium rounded-sm hover:bg-black transition">
+              <span *ngIf="producto.stock > 0">AÑADIR</span>
+              <span *ngIf="producto.stock === 0">AGOTADO</span>
+            </button>
           </div>
         </div>
       </div>
+    </ng-container>
 
-      <div class="px-3 pt-1 pb-2 flex flex-col justify-between flex-1 -mt-2">
-        <div>
-          <h3 class="text-sm font-medium text-gray-700 leading-tight">
-            {{ producto.name }}
-          </h3>
-        </div>
-
-        <div class="flex items-center gap-2 mt-1">
-          <a class="flex items-center gap-2">
-            <p class="text-sm font-bold text-gray-900">
-              {{ formatPrice(producto.offer ? producto.offer.discountedPrice : producto.price) }}
-            </p>
-            <p *ngIf="producto.offer" class="text-sm font-normal text-gray-400 line-through">
-              {{ formatPrice(producto.price) }}
-            </p>
-          </a>
-
-          <a (click)="openModal(producto)" class="ml-auto text-gray-500 hover:text-black transition">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-              stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span class="sr-only">Ver detalles</span>
-          </a>
-        </div>
-
-       <div class="mt-2 flex items-center gap-2">
-    <select [(ngModel)]="producto.selectedQuantity"
-      class="w-1/3 bg-gray-100 text-gray-900 text-sm py-2 px-2 rounded-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black">
-      <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
-    </select>
-    
-    <button (click)="addToCart(producto, producto.selectedQuantity)"
-      [disabled]="producto.stock === 0"
-      [class.bg-gray-400]="producto.stock === 0"
-      [class.hover:bg-gray-400]="producto.stock === 0"
-      [class.cursor-not-allowed]="producto.stock === 0"
-      class="w-2/3 bg-gray-900 text-white py-2 text-sm font-medium rounded-sm hover:bg-black transition">
-      <span *ngIf="producto.stock > 0">AÑADIR</span>
-      <span *ngIf="producto.stock === 0">AGOTADO</span>
-    </button>
-  </div>
-      </div>
-
-    </div>
   </div>
 
   <app-product-detail-modal [product]="selectedProduct" [show]="showModal"

@@ -29,7 +29,10 @@ export class Header implements AfterViewInit {
   public cart = inject(Cart);
   total = this.cart.total;
 
-  totalItems = computed(() => this.cart.getTotalCount());
+   // Exponemos la señal 'totalCount' del servicio para que el HTML la pueda usar
+  totalCount = this.cart.totalCount;
+
+  // totalItems = computed(() => this.cart.getTotalCount());
 
 
   ngAfterViewInit(): void {

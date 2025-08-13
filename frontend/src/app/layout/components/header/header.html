@@ -20,9 +20,10 @@
       <div (click)="toggleCartSidebar()" class="relative cursor-pointer">
         <i data-lucide="shopping-cart" class="w-5 h-5 hover:text-gray-600"></i>
 
-        <span *ngIf="totalItems() !== null && totalItems() !== undefined && totalItems() > 0"
+        <!-- Cambiamos 'totalItems()' por 'totalCount()' -->
+        <span *ngIf="totalCount() > 0"
           class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
-          {{ totalItems() }}
+          {{ totalCount() }}
         </span>
       </div>
 

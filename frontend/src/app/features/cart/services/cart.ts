@@ -73,9 +73,10 @@ export class Cart {
     this.cartItems.set([]);
   }
 
-   getTotalCount(): number {
-    return this.cartItems().reduce((acc, item) => acc + item.quantity, 0);
-  }
+// Nueva propiedad computada para el total de artículos
+readonly totalCount = computed(() =>
+  this.cartItems().reduce((acc, item) => acc + item.quantity, 0)
+);
 
   readonly total = computed(() =>
     this.cartItems().reduce((acc, item) => acc + item.price * item.quantity, 0)
