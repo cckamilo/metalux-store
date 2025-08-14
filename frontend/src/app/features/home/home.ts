@@ -53,7 +53,6 @@ export class Home {
       category: {
         id: 1,
         name: "Pines"
-
       },
       sizes: [],
       genres: {
@@ -488,28 +487,76 @@ export class Home {
     return product.offer?.discountedPrice ?? product.price;
   }
 
-  // Valida si el producto cumple con los filtros seleccionados
+  /**
+   * Valida si el producto cumple con los filtros seleccionados
+   * @param product El producto a evaluar.
+   * @param filters Los filtros seleccionados.
+   */
   matchesFilter(product: any, filters: string[]): boolean {
-    const { categorias, tallas, generos } = this.filterService.filtros;
-
-    const filtrosCategoria = filters.filter(f => categorias.includes(f));
-    const filtrosTalla = filters.filter(f => tallas.includes(f));
-    const filtrosGenero = filters.filter(f => generos.includes(f));
-
-    if (filtrosCategoria.length > 0 && !filtrosCategoria.includes(product.category?.name)) {
-      return false;
+    if (filters.length === 0) {
+      return true;
     }
 
-    if (filtrosGenero.length > 0 && !filtrosGenero.includes(product.genres?.name)) {
-      return false;
+    // ✅ CORRECCIÓN: Si el filtro de ofertas está activo, el producto DEBE tener una oferta.
+    const isOfferFilterActive = filters.includes('OFERTAS');
+    if (isOfferFilterActive && !product.offer) {
+        return false;
     }
 
-    if (filtrosTalla.length > 0) {
-      const tieneTalla = product.sizes?.some((size: string) => filtrosTalla.includes(size));
-      if (!tieneTalla) return false;
+    // Si solo está activo el filtro de ofertas, no hay más lógica que aplicar.
+    if (isOfferFilterActive && filters.length === 1) {
+        return true;
     }
 
-    return true;
+    // Obtener la lista de filtros estructurada del servicio.
+    const filtroList = this.filterService.filtroList;
+    let allFiltersMatch = true;
+
+    // Iterar sobre la lista de filtros para verificar cada grupo de opciones
+    for (const filtro of filtroList) {
+      if (!filtro.enabled) {
+        continue; // Saltar filtros deshabilitados
+      }
+
+      let filtroOptions: string[] = [];
+      if (filtro.options) {
+        filtroOptions = filtro.options;
+      } else if (filtro.subcategories) {
+        filtroOptions = filtro.subcategories.flatMap(sub => sub.options);
+      }
+      
+      // ✅ CORRECCIÓN: Los filtros de ofertas no están en `filtroList`, por lo que los ignoramos aquí.
+      const filtrosActivosEnGrupo = filters.filter(f => filtroOptions.includes(f) && f !== 'OFERTAS');
+
+      if (filtrosActivosEnGrupo.length > 0) {
+        let coincideConGrupo = false;
+
+        // Lógica de filtrado específica para cada título de filtro
+        if (filtro.title === 'Producto') {
+          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.category?.name?.toLowerCase() === f.toLowerCase());
+        } else if (filtro.title === 'Géneros') {
+          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.genres?.name?.toLowerCase() === f.toLowerCase());
+        } else if (filtro.title === 'Tallas') {
+          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.sizes && product.sizes.some((s: string) => s.toLowerCase() === f.toLowerCase()));
+        } else if (filtro.title === 'Administración') {
+          // Lógica de filtrado para administración, si aplica
+          coincideConGrupo = false; // Asumimos que los productos no tienen un campo de "Administración"
+        }
+
+        if (!coincideConGrupo) {
+          allFiltersMatch = false;
+          break; // No hay necesidad de seguir evaluando si un grupo ya no coincide.
+        }
+      }
+    }
+    
+    // Si no hay otros filtros seleccionados (además de ofertas), el resultado es verdadero.
+    // Esto es para que al quitar el filtro de ofertas, se muestren todos los productos.
+    if (allFiltersMatch && isOfferFilterActive) {
+      return true;
+    }
+
+    return allFiltersMatch;
   }
 
   // Aplica filtros cuando cambian desde el componente
