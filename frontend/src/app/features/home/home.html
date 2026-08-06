@@ -14,14 +14,11 @@
       </select>
     </div>
   </div>
-
   <!-- Grid de productos -->
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-
     <!-- Tarjeta -->
     <!-- 1. El *ngFor se mueve a un <ng-container> -->
     <ng-container *ngFor="let producto of visibleProducts">
-
       <!-- 2. El *ngIf se queda en el div de la tarjeta -->
       <div *ngIf="producto.enabled" class="w-full bg-white rounded overflow-hidden flex flex-col">
         <!-- Contenido de la tarjeta -->
