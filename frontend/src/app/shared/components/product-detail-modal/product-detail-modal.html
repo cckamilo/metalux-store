@@ -8,38 +8,38 @@
     
     <h2 class="text-2xl font-bold mb-2">{{ product?.name }}</h2>
     <div *ngIf="product">
+      <p class="mb-1 text-sm text-gray-600">
+        {{ product.details?.artist }} · {{ product.details?.format === 'vinyl' ? 'Vinilo' : 'CD' }}
+      </p>
       <p class="mb-4">{{ product.description }}</p>
 
-      <div *ngIf="product.specifications" class="mb-4">
+      <div *ngIf="product.details?.type === 'music'" class="mb-4">
         <h3 class="text-lg font-bold mb-2">Especificaciones:</h3>
         <ul class="list-disc list-inside space-y-1 text-gray-700">
-          <li *ngIf="product.specifications.material">
-            <span class="font-semibold">Material:</span> {{ product.specifications.material }}
+          <li *ngIf="product.details?.genre">
+            <span class="font-semibold">Género:</span> {{ product.details.genre }}
           </li>
-          <li *ngIf="product.specifications.color">
-            <span class="font-semibold">Color:</span> {{ product.specifications.color }}
+          <li *ngIf="product.details?.releaseYear">
+            <span class="font-semibold">Año:</span> {{ product.details.releaseYear }}
           </li>
-          <li *ngIf="product.specifications.closure">
-            <span class="font-semibold">Cierre:</span> {{ product.specifications.closure }}
+          <li *ngIf="product.details?.label">
+            <span class="font-semibold">Sello:</span> {{ product.details.label }}
           </li>
-          <li *ngIf="product.specifications.diameter">
-            <span class="font-semibold">Diámetro:</span> {{ product.specifications.diameter }}
-          </li>
-          <li *ngIf="product.specifications.width">
-            <span class="font-semibold">Ancho:</span> {{ product.specifications.width }}
-          </li>
-          <li *ngIf="product.specifications.height">
-            <span class="font-semibold">Alto:</span> {{ product.specifications.height }}
+          <li *ngIf="product.details?.discCount">
+            <span class="font-semibold">Discos:</span> {{ product.details.discCount }}
           </li>
         </ul>
       </div>
 
       <div class="flex items-center gap-2 mb-2">
         <span class="font-bold">Precio:</span>
-        <p class="text-lg font-semibold">{{ formatPrice(product.price) }}</p>
-        <p *ngIf="product.offer" class="text-sm font-normal text-gray-500 line-through">
+        <p class="text-lg font-semibold">{{ formatPrice(getProductPrice(product)) }}</p>
+        <p *ngIf="hasDiscount(product)" class="text-sm font-normal text-gray-500 line-through">
           {{ formatPrice(product.price) }}
         </p>
+        <span *ngIf="hasDiscount(product)" class="text-sm font-semibold text-red-600">
+          {{ getDiscountLabel(product) }}
+        </span>
       </div>
       
       <p *ngIf="product.stock > 0" class="mb-2">

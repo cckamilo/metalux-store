@@ -1,28 +1,24 @@
-declare var lucide: any;
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { Cart, CartItem } from '../../services/cart';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule, Trash2 } from 'lucide-angular';
 
 
 @Component({
   selector: 'app-cart-list',
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   standalone: true,
   templateUrl: './cart-list.html'
 })
 export class CartList {
+
+  readonly trashIcon = Trash2;
 
   private _isOpen: boolean = false;
 
   @Input()
   set isOpen(value: boolean) {
     this._isOpen = value;
-    // Este es el único código que necesitamos aquí
-    if (value) {
-      setTimeout(() => {
-        lucide.createIcons();
-      }, 0);
-    }
   }
 
   get isOpen(): boolean {

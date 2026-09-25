@@ -1,17 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, EventEmitter, HostListener, inject, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, OnInit } from '@angular/core';
 import { MenuFilter, FiltroList } from '../../../core/services/menufilter/menu-filter';
 import { Auth } from '../../../core/services/auth/auth';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule, X } from 'lucide-angular';
 
-declare var lucide: any;
 @Component({
   selector: 'app-sidenav',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './sidenav.html'
 })
-export class Sidenav implements OnInit, AfterViewInit {
+export class Sidenav implements OnInit {
+
+  readonly closeIcon = X;
 
   // Inyectamos el servicio de autenticación
   private authService = inject(Auth);
@@ -42,10 +44,6 @@ export class Sidenav implements OnInit, AfterViewInit {
     this.filterService.filters$.subscribe(filters => {
       this.selectedFilters = filters;
     });
-  }
-
-  ngAfterViewInit(): void {
-    lucide.createIcons();
   }
 
   /**

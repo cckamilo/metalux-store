@@ -5,6 +5,24 @@ import { ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MenuFilter } from '../../core/services/menufilter/menu-filter';
 import { ProductDetailModal } from '../../shared/components/product-detail-modal/product-detail-modal';
+import { Category, MusicDetails, Product } from '../catalog/models/product.model';
+import { PricingService } from '../catalog/services/pricing.service';
+
+type ProductCardItem = Omit<Product, 'details'> & {
+  details: MusicDetails;
+};
+
+interface ProductCardState {
+  currentImage: number;
+  selectedQuantity: number;
+}
+
+const musicCategory: Category = {
+  id: 1,
+  name: 'Música',
+  slug: 'musica',
+  isActive: true
+};
 
 @Component({
   standalone: true,
@@ -19,13 +37,15 @@ export class Home {
   constructor(
     private cart: Cart,
     private cdr: ChangeDetectorRef,
-    private filterService: MenuFilter
+    private filterService: MenuFilter,
+    private pricingService: PricingService
   ) { }
 
   selectedSort = 'relevance';
   // Propiedades para el modal
   showModal = false;
-  selectedProduct: any;
+  selectedProduct: ProductCardItem | null = null;
+  private readonly cardStates = new Map<number, ProductCardState>();
 
   sortOptions = [
     { label: 'Más relevantes', value: 'relevance' },
@@ -34,354 +54,249 @@ export class Home {
     { label: 'Más recientes', value: 'newest' },
   ];
 
-  products = [
+  products: ProductCardItem[] = [
     {
       id: 1,
-      name: 'Pin Rock Al Parque',
-      color: 'Amarillo-Negro',
-      price: 9900,
-      description: "Exprésate con estilo y pasión por la música pesada con este pin metálico de alta calidad, diseñado especialmente para fans de las mejores bandas de metal. Fabricado en metal resistente con acabado esmaltado, este pin destaca por su detalle preciso y durabilidad. Perfecto para lucir en chaquetas, mochilas o gorras, es el accesorio ideal para cualquier headbanger que quiera mostrar su amor por el metal.",
+      name: 'From Mars To Sirius',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Gojira',
+        format: 'vinyl',
+        genre: 'Progressive Metal',
+        releaseYear: 2005,
+        releaseDate: '2005-09-27',
+        label: 'Listenable Records',
+        discCount: 2,
+        condition: 'new'
+      },
+      price: 105000,
+      description: 'Edición en vinilo del clásico álbum de Gojira, con sonido progresivo y atmósfera intensa.',
       stock: 0,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_867920-MCO49256892054_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_984445-MLA87477124752_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
+        'https://f4.bcbits.com/img/0042534543_10.jpg',
+        'https://f4.bcbits.com/img/0013928875_10.jpg'
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: "Pines"
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Black Metal"
-      },
-      offer: {
-        title: '-20%',
-        description: 'Solo esta semana',
-        discountedPrice: 7900
-      },
-      publishDate: null,
-      specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: true
     },
     {
       id: 2,
-      name: 'Pin Joy Division',
-      color: 'Negro-Blanco',
-      price: 9900,
-      description: "Exprésate con estilo y pasión por la música pesada con este pin metálico de alta calidad, diseñado especialmente para fans de las mejores bandas de metal. Fabricado en metal resistente con acabado esmaltado, este pin destaca por su detalle preciso y durabilidad. Perfecto para lucir en chaquetas, mochilas o gorras, es el accesorio ideal para cualquier headbanger que quiera mostrar su amor por el metal.",
+      name: 'Slaughter of the Soul',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'At The Gates',
+        format: 'vinyl',
+        genre: 'Melodic Death Metal',
+        releaseYear: 1995,
+        releaseDate: '1995-11-14',
+        label: 'Earache Records',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 95000,
+      description: 'Obra esencial del death metal melódico sueco, disponible en una edición de vinilo para coleccionistas.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_705248-MLA87318121302_072025-F.webp'
+        'https://f4.bcbits.com/img/0037369395_10.jpg',
+        'https://f4.bcbits.com/img/a2024836109_5.jpg',
+        'https://f4.bcbits.com/img/0008114998_10.jpg',
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: "Pines"
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: {
-        title: '-20%',
-        description: 'Solo esta semana',
-        discountedPrice: 7900
-      },
-      publishDate: '2025-07-20',
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: true
     },
     {
       id: 3,
-      name: 'Pin Jack',
-      material: 'Metal',
-      color: 'Black-White',
-      price: 11000,
-      description: "",
+      name: 'The Way of All Flesh',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Gojira',
+        format: 'vinyl',
+        genre: 'Progressive Metal',
+        releaseYear: 2008,
+        releaseDate: '2008-10-13',
+        label: 'Listenable Records',
+        discCount: 2,
+        condition: 'new'
+      },
+      price: 110000,
+      description: 'Álbum de Gojira con una mezcla poderosa de metal progresivo, precisión rítmica y pasajes atmosféricos.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_985184-MLA87652094141_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_906741-MLA87652320287_072025-F.webp'
+        'https://f4.bcbits.com/img/0040270533_10.jpg',
+        'https://f4.bcbits.com/img/0013928710_10.jpg'
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: 'Pines'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: {
-        title: '-20%',
-        description: 'Solo esta semana',
-        discountedPrice: 8800
-      },
-      publishDate: '2025-07-20',
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: true
     },
     {
       id: 4,
-      name: 'Pin Muse',
-      material: 'Metal',
-      color: 'Black-White',
-      price: 9900,
-      description: "",
+      name: 'Fallen Angel Of Doom',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Blasphemy',
+        format: 'vinyl',
+        genre: 'War Metal',
+        releaseYear: 1990,
+        releaseDate: '1990-10-01',
+        label: 'Wild Rags Records',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 90000,
+      description: 'Pieza fundamental del war metal canadiense, presentada en formato vinilo para una colección extrema.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_762659-MLA88123377247_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_705880-MLA88123250371_072025-F.webp'
+        'https://f4.bcbits.com/img/0047466366_10.jpg',
+        'https://f4.bcbits.com/img/a0064561049_5.jpg'
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: 'Pines'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: null,
-      publishDate: null,
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: false
     },
     {
       id: 5,
-      name: 'Pin A Clockwork Orange',
-      material: 'Metal',
-      color: 'Black-Orange',
-      price: 12000,
-      description: "",
+      name: 'Pro Xristou',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Rotting Christ',
+        format: 'vinyl',
+        genre: 'Black Metal',
+        releaseYear: 2024,
+        releaseDate: '2024-05-24',
+        label: 'Season of Mist',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 115000,
+      description: 'Lanzamiento reciente de Rotting Christ con una propuesta oscura, épica y profundamente melódica.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_984445-MLA87477124752_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
+        'https://f4.bcbits.com/img/0035139854_10.jpg',
+        'https://f4.bcbits.com/img/0035139793_10.jpg'
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: 'Pines'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: null,
-      publishDate: null,
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: false
     },
     {
       id: 6,
-      name: 'Pin Rock Al Parque',
-      material: 'Metal',
-      color: 'Yellow-Black',
-      price: 9900,
-      description: "",
+      name: 'Left Hand Path',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Entombed',
+        format: 'vinyl',
+        genre: 'Death Metal',
+        releaseYear: 1990,
+        releaseDate: '1990-06-04',
+        label: 'Earache Records',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 95000,
+      description: 'Clásico del death metal sueco, reconocido por sus guitarras densas y su sonido crudo e influyente.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_867920-MCO49256892054_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_984445-MLA87477124752_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
+        'https://f4.bcbits.com/img/0031611650_10.jpg',
+        'https://f4.bcbits.com/img/0042673750_10.jpg',
+        'https://f4.bcbits.com/img/0027919700_10.jpg',
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: 'Pines'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: null,
-      publishDate: null,
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: false
     },
     {
       id: 7,
-      name: 'Pin Rock Al Parque',
-      material: 'Metal',
-      color: 'Yellow-Black',
-      price: 9900,
-      description: "",
+      name: 'Melissa',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Mercyful Fate',
+        format: 'vinyl',
+        genre: 'Heavy Metal',
+        releaseYear: 1983,
+        releaseDate: '1983-10-30',
+        label: 'Roadrunner Records',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 100000,
+      description: 'Debut histórico de Mercyful Fate, una referencia del heavy metal oscuro y teatral de los años ochenta.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_867920-MCO49256892054_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_984445-MLA87477124752_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
+        'https://f4.bcbits.com/img/0041204342_10.jpg',
+        'https://f4.bcbits.com/img/a1613378443_5.jpg'       
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 1,
-        name: 'Pines'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: null,
-      publishDate: null,
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: false
     },
     {
       id: 8,
-      name: 'Pin Rock Al Parque',
-      material: 'Metal',
-      color: 'Yellow-Black',
-      price: 9900,
-      description: "",
+      name: 'Necroticism – Descanting the Insalubrious',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Carcass',
+        format: 'vinyl',
+        genre: 'Death Metal',
+        releaseYear: 1991,
+        releaseDate: '1991-10-01',
+        label: 'Earache Records',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 110000,
+      description: 'Álbum esencial de Carcass, donde el death metal y el grindcore se encuentran con composiciones complejas.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_867920-MCO49256892054_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_984445-MLA87477124752_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
+        'https://f4.bcbits.com/img/0046581314_10.jpg',
+        'https://f4.bcbits.com/img/0041935587_10.jpg',
+        'https://f4.bcbits.com/img/0024791282_10.jpg',
+        'https://f4.bcbits.com/img/0042673716_10.jpg'
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 2,
-        name: 'Fundas'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: null,
-      publishDate: null,
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: false
     },
     {
       id: 9,
-      name: 'Pin Rock Al Parque',
-      material: 'Metal',
-      color: 'Yellow-Black',
-      price: 9900,
-      description: "",
+      name: 'Don\'t Break the Oath',
+      category: musicCategory,
+      details: {
+        type: 'music',
+        artist: 'Mercyful Fate',
+        format: 'vinyl',
+        genre: 'Heavy Metal',
+        releaseYear: 1984,
+        releaseDate: '1984-09-07',
+        label: 'Roadrunner Records',
+        discCount: 1,
+        condition: 'new'
+      },
+      price: 100000,
+      description: 'Clásico de Mercyful Fate con una identidad oscura, riffs memorables y una interpretación vocal inconfundible.',
       stock: 20,
       images: [
-        'https://http2.mlstatic.com/D_NQ_NP_2X_849712-MCO49256793575_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_867920-MCO49256892054_032022-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_984445-MLA87477124752_072025-F.webp',
-        'https://http2.mlstatic.com/D_NQ_NP_2X_700139-MLA87476949920_072025-F.webp'
+        'https://f4.bcbits.com/img/0041204391_10.jpg',
+        'https://f4.bcbits.com/img/a0621509914_5.jpg'
       ],
-      currentimage: 0,
-      selectedQuantity: 1,
-      category: {
-        id: 2,
-        name: 'Fundas'
-      },
-      sizes: [],
-      genres: {
-        id: 1,
-        name: "Death Metal"
-      },
-      offer: null,
-      publishDate: null,
-       specifications: {
-        material: "Metal",
-        color: "Yellow-Black",
-        closure: "Butterfly clutch",
-        diameter: "3 cm",
-        width: "3 cm",
-        height: "3 cm"
-      },
-       enabled: true // ✅ Este producto está visible en la tienda
+      isActive: true,
+      isNew: false
     }
 
   ];
 
   // Control de scroll y paginación
   isLoadingMore = false;
-  visibleProducts: any[] = [];
+  visibleProducts: ProductCardItem[] = [];
   itemsPerPage = 9;
   currentPage = 1;
 
   // Filtros seleccionados y productos filtrados
   selectedFilters: string[] = [];
-  allProducts = this.products; // copia original sin filtrar
-  filteredProducts: any[] = []; // productos luego de filtros
+  allProducts: ProductCardItem[] = this.products; // copia original sin filtrar
+  filteredProducts: ProductCardItem[] = []; // productos luego de filtros
 
   // Hook del ciclo de vida: inicialización después del render
   ngAfterViewInit(): void {
@@ -428,11 +343,12 @@ export class Home {
   }
 
   // Agrega producto al carrito
-  addToCart(product: any, quantity: number) {
+  addToCart(product: ProductCardItem, quantity: number) {
     const item: CartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: this.getProductPrice(product),
+      image: product.images[0],
       quantity: Number(quantity),
     };
     this.cart.addItem(item);
@@ -443,15 +359,36 @@ export class Home {
     return '$' + price.toLocaleString('es-CO');
   }
 
+  getCardState(product: ProductCardItem): ProductCardState {
+    let state = this.cardStates.get(product.id);
+
+    if (!state) {
+      state = { currentImage: 0, selectedQuantity: 1 };
+      this.cardStates.set(product.id, state);
+    }
+
+    return state;
+  }
+
+  setQuantity(product: ProductCardItem, quantity: number): void {
+    this.getCardState(product).selectedQuantity = Number(quantity);
+  }
+
+  selectImage(product: ProductCardItem, imageIndex: number): void {
+    this.getCardState(product).currentImage = imageIndex;
+  }
+
   // Cambia a la siguiente imagen del producto
-  nextImage(product: any): void {
-    product.currentimage = (product.currentimage + 1) % product.images.length;
+  nextImage(product: ProductCardItem): void {
+    const state = this.getCardState(product);
+    state.currentImage = (state.currentImage + 1) % product.images.length;
   }
 
   // Cambia a la imagen anterior del producto
-  previousImage(product: any): void {
-    product.currentimage =
-      (product.currentimage - 1 + product.images.length) % product.images.length;
+  previousImage(product: ProductCardItem): void {
+    const state = this.getCardState(product);
+    state.currentImage =
+      (state.currentImage - 1 + product.images.length) % product.images.length;
   }
 
   // Cambia el orden seleccionado
@@ -473,7 +410,7 @@ export class Home {
         break;
       case 'newest':
         this.filteredProducts.sort((a, b) =>
-          new Date(b.fechaCreacion || '').getTime() - new Date(a.fechaCreacion || '').getTime()
+          new Date(b.details.releaseDate || '').getTime() - new Date(a.details.releaseDate || '').getTime()
         );
         break;
       default:
@@ -483,8 +420,16 @@ export class Home {
   }
 
   // Devuelve el precio correcto del producto (con descuento si aplica)
-  getProductPrice(product: any): number {
-    return product.offer?.discountedPrice ?? product.price;
+  getProductPrice(product: ProductCardItem): number {
+    return this.pricingService.getFinalPrice(product);
+  }
+
+  hasDiscount(product: ProductCardItem): boolean {
+    return this.pricingService.hasDiscount(product);
+  }
+
+  getDiscountLabel(product: ProductCardItem): string | null {
+    return this.pricingService.getDiscountLabel(product);
   }
 
   /**
@@ -492,20 +437,32 @@ export class Home {
    * @param product El producto a evaluar.
    * @param filters Los filtros seleccionados.
    */
-  matchesFilter(product: any, filters: string[]): boolean {
+  matchesFilter(product: ProductCardItem, filters: string[]): boolean {
     if (filters.length === 0) {
       return true;
     }
 
     // ✅ CORRECCIÓN: Si el filtro de ofertas está activo, el producto DEBE tener una oferta.
     const isOfferFilterActive = filters.includes('OFERTAS');
-    if (isOfferFilterActive && !product.offer) {
+    if (isOfferFilterActive && !this.hasDiscount(product)) {
         return false;
     }
 
+    const isNewFilterActive = filters.includes('NOVEDADES');
+    if (isNewFilterActive && !product.isNew) {
+      return false;
+    }
+
     // Si solo está activo el filtro de ofertas, no hay más lógica que aplicar.
-    if (isOfferFilterActive && filters.length === 1) {
+    if ((isOfferFilterActive || isNewFilterActive) && filters.length === 1) {
         return true;
+    }
+
+    const formatFilters = filters.filter(filter => filter === 'Vinilo' || filter === 'CD');
+    if (formatFilters.length > 0 && !formatFilters.some(filter =>
+      product.details.format === (filter === 'Vinilo' ? 'vinyl' : 'cd')
+    )) {
+      return false;
     }
 
     // Obtener la lista de filtros estructurada del servicio.
@@ -532,12 +489,8 @@ export class Home {
         let coincideConGrupo = false;
 
         // Lógica de filtrado específica para cada título de filtro
-        if (filtro.title === 'Producto') {
-          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.category?.name?.toLowerCase() === f.toLowerCase());
-        } else if (filtro.title === 'Géneros') {
-          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.genres?.name?.toLowerCase() === f.toLowerCase());
-        } else if (filtro.title === 'Tallas') {
-          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.sizes && product.sizes.some((s: string) => s.toLowerCase() === f.toLowerCase()));
+        if (filtro.title === 'Géneros') {
+          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.details?.genre?.toLowerCase() === f.toLowerCase());
         } else if (filtro.title === 'Administración') {
           // Lógica de filtrado para administración, si aplica
           coincideConGrupo = false; // Asumimos que los productos no tienen un campo de "Administración"
@@ -583,21 +536,12 @@ export class Home {
   }
 
   // Nuevo método para verificar si un producto es nuevo (menos de 30 días)
-  isProductNew(product: any): boolean {
-    if (!product.publishDate) {
-      return false; // Si no hay fecha de publicación, no es nuevo.
-    }
-
-    const publishDate = new Date(product.publishDate);
-    const today = new Date();
-    const diffTime = today.getTime() - publishDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Convierte milisegundos a días
-
-    return diffDays <= 30; // Devuelve true si la diferencia es de 30 días o menos.
+  isProductNew(product: ProductCardItem): boolean {
+    return product.isNew;
   }
 
   // Método para abrir el modal
-  openModal(product: any) {
+  openModal(product: ProductCardItem) {
     this.selectedProduct = product;
     this.showModal = true;
   }

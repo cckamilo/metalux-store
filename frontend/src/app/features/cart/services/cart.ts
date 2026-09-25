@@ -1,11 +1,7 @@
 import { Injectable, signal, effect, computed } from '@angular/core';
+import { CartItem } from '../models/cart-item.model';
 
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-}
+export type { CartItem } from '../models/cart-item.model';
 
 const STORAGE_KEY = 'cart-items';
 

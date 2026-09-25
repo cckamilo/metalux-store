@@ -1,21 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, effect, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { Cart } from '../../../features/cart/services/cart';
 import { CartList } from '../../../features/cart/components/cart-list/cart-list';
-
-
-declare var lucide: any;
+import { MenuFilter } from '../../../core/services/menufilter/menu-filter';
+import { LucideAngularModule, Menu, Search, ShoppingCart, User } from 'lucide-angular';
+import { RouterLink } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-header',
   imports: [
     CommonModule,
-    CartList
+    CartList,
+    LucideAngularModule,
+    RouterLink
   ],
   templateUrl: './header.html'
 })
-export class Header implements AfterViewInit {
+export class Header {
 
   @Output() menuClicked = new EventEmitter<void>();
 
@@ -25,8 +27,19 @@ export class Header implements AfterViewInit {
 
   showSearch = false;
   isCartSidebarOpen = false;
+  readonly quickNavigation = [
+    { label: 'Novedades', filter: 'NOVEDADES' },
+    { label: 'Vinilos', filter: 'Vinilo' },
+    { label: 'CDs', filter: 'CD' },
+    { label: 'Ofertas', filter: 'OFERTAS' }
+  ];
 
   public cart = inject(Cart);
+  private filterService = inject(MenuFilter);
+  readonly menuIcon = Menu;
+  readonly searchIcon = Search;
+  readonly cartIcon = ShoppingCart;
+  readonly userIcon = User;
   total = this.cart.total;
 
    // Exponemos la señal 'totalCount' del servicio para que el HTML la pueda usar
@@ -35,13 +48,8 @@ export class Header implements AfterViewInit {
   // totalItems = computed(() => this.cart.getTotalCount());
 
 
-  ngAfterViewInit(): void {
-    lucide.createIcons(); // Activar íconos luego de cargar el DOM
-  }
-
   toggleSearch(): void {
     this.showSearch = !this.showSearch;
-    setTimeout(() => lucide.createIcons(), 0); // Re-render icons si cambian
   }
 
   toggleCartSidebar() {
@@ -50,6 +58,14 @@ export class Header implements AfterViewInit {
 
   closeCartSidebar() {
     this.isCartSidebarOpen = false;
+  }
+
+  selectQuickFilter(filter: string): void {
+    this.filterService.setFilters([filter]);
+  }
+
+  goHome(): void {
+    this.filterService.clearFilters();
   }
 
 }

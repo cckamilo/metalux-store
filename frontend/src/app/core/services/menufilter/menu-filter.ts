@@ -56,30 +56,8 @@ export class MenuFilter {
   // ✅ Aquí se ha agregado la estructura de filtros que proporcionaste
   filtroList: FiltroList[] = [
     {
-      title: 'Producto',
-      options: ['Pines', 'Fundas', 'OFERTAS'],
-      roles: ['admin', 'cliente'],
-      enabled: true,
-    },
-
-    {
-      title: 'Tallas',
-      subcategories: [
-        {
-          name: 'Superior',
-          options: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-        },
-        {
-          name: 'Inferior',
-          options: ['26', '28', '30', '32', '34', '36', '38'],
-        },
-      ],
-      roles: ['admin', 'cliente'],
-      enabled: false,
-    },
-    {
       title: 'Géneros',
-      options: ['Rock', 'Black Metal', 'Death Metal', 'Heavy Metal', 'Thrash Metal'],
+      options: ['Black Metal', 'Death Metal', 'Heavy Metal', 'Progressive Metal', 'War Metal', 'Melodic Death Metal'],
       roles: ['admin', 'cliente'],
       enabled: true,
     },

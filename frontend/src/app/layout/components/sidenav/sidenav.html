@@ -1,9 +1,9 @@
 <div
-  class="fixed top-0 left-0 h-full w-80 z-[999] bg-black text-white shadow-xl transform transition-transform duration-300 overflow-y-auto font-sans"
+  class="fixed top-0 left-0 h-full w-80 z-[999] bg-black text-white shadow-xl transform transition-transform duration-500 ease-out overflow-y-auto font-sans"
   [ngClass]="{ 'translate-x-0': isOpen, '-translate-x-full': !isOpen }">
 
   <button (click)="onCloseClick()" class="absolute top-4 right-4 text-gray-300 hover:text-white z-[1000]">
-    <i data-lucide="x" class="w-6 h-6"></i>
+    <lucide-icon [img]="closeIcon" class="w-6 h-6"></lucide-icon>
   </button>
 
   <div class="px-5 pt-6 pb-10">
