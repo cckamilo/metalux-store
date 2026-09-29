@@ -3,14 +3,14 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Cart, CartItem } from '../cart/services/cart';
 import { ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MenuFilter } from '../../core/services/menufilter/menu-filter';
+import { CatalogFilterService } from '../../core/services/catalog-filter/catalog-filter';
 import { ProductDetailModal } from '../../shared/components/product-detail-modal/product-detail-modal';
-import { Category, MusicDetails, Product } from '../catalog/models/product.model';
+import { CampaignCarousel } from '../marketing/components/campaign-carousel/campaign-carousel';
+import { CampaignSlide } from '../marketing/domain/campaign.model';
+import { CampaignService } from '../marketing/services/campaign.service';
+import { ProductCardComponent, ProductCardItem } from '../catalog/components/product-card/product-card';
+import { Category, Product } from '../catalog/domain/product.model';
 import { PricingService } from '../catalog/services/pricing.service';
-
-type ProductCardItem = Omit<Product, 'details'> & {
-  details: MusicDetails;
-};
 
 interface ProductCardState {
   currentImage: number;
@@ -27,7 +27,7 @@ const musicCategory: Category = {
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [CommonModule, FormsModule, ProductDetailModal],
+  imports: [CommonModule, FormsModule, ProductDetailModal, CampaignCarousel, ProductCardComponent],
   templateUrl: './home.html'
 })
 export class Home {
@@ -37,14 +37,21 @@ export class Home {
   constructor(
     private cart: Cart,
     private cdr: ChangeDetectorRef,
-    private filterService: MenuFilter,
-    private pricingService: PricingService
-  ) { }
+    private filterService: CatalogFilterService,
+    private pricingService: PricingService,
+    private campaignService: CampaignService
+  ) {
+    this.campaignSlides = this.campaignService.getHomeCarouselSlides();
+    this.genreOptions = this.filterService.genreOptions;
+  }
 
   selectedSort = 'relevance';
+  showGenreFilter = false;
+  readonly genreOptions: string[];
   // Propiedades para el modal
   showModal = false;
   selectedProduct: ProductCardItem | null = null;
+  readonly campaignSlides: CampaignSlide[];
   private readonly cardStates = new Map<number, ProductCardState>();
 
   sortOptions = [
@@ -291,14 +298,13 @@ export class Home {
   isLoadingMore = false;
   visibleProducts: ProductCardItem[] = [];
   itemsPerPage = 9;
-  currentPage = 1;
 
   // Filtros seleccionados y productos filtrados
   selectedFilters: string[] = [];
   allProducts: ProductCardItem[] = this.products; // copia original sin filtrar
   filteredProducts: ProductCardItem[] = []; // productos luego de filtros
 
-  // Hook del ciclo de vida: inicialización después del render
+  // Hook de inicialización: prepara los productos visibles y subscribes los filtros del servicio global.
   ngAfterViewInit(): void {
     this.filteredProducts = [...this.products];
     this.loadMoreProducts();
@@ -306,16 +312,14 @@ export class Home {
 
     // Escucha cambios de filtros desde el servicio y recarga productos
     this.filterService.filters$.subscribe((filters: string[]) => {
+      const scrollTop = this.scrollContainer.nativeElement.scrollTop;
       this.selectedFilters = filters;
       this.applyFilters();
-
-      this.visibleProducts = [];
-      this.currentPage = 1;
-      this.loadMoreProducts();
+      this.refreshVisibleProducts(scrollTop);
     });
   }
 
-  // Detecta scroll para carga infinita
+  // Detecta el fin del scroll para pedir más productos y mantener la paginación incremental.
   onScroll() {
     const el = this.scrollContainer.nativeElement;
     const limite = el.scrollHeight - el.clientHeight - 100;
@@ -325,7 +329,7 @@ export class Home {
     }
   }
 
-  // Carga más productos en la vista visible
+  // Añade el siguiente lote de productos a la vista visible usando paginación incremental.
   loadMoreProducts() {
     if (this.isLoadingMore) return;
     if (this.visibleProducts.length >= this.filteredProducts.length) return;
@@ -342,7 +346,18 @@ export class Home {
     }, 300);
   }
 
-  // Agrega producto al carrito
+  private refreshVisibleProducts(scrollTop: number): void {
+    this.isLoadingMore = false;
+    this.visibleProducts = this.filteredProducts.slice(0, this.itemsPerPage);
+
+    requestAnimationFrame(() => {
+      const el = this.scrollContainer.nativeElement;
+      const maxScrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
+      el.scrollTop = Math.min(scrollTop, maxScrollTop);
+    });
+  }
+
+  // Convierte el producto visual en un item del carrito con la cantidad actual y el precio final.
   addToCart(product: ProductCardItem, quantity: number) {
     const item: CartItem = {
       id: product.id,
@@ -354,11 +369,7 @@ export class Home {
     this.cart.addItem(item);
   }
 
-  // Formatear precio en pesos colombianos
-  formatPrice(price: number): string {
-    return '$' + price.toLocaleString('es-CO');
-  }
-
+  // Devuelve el estado visual del producto para controlar imagen activa y cantidad seleccionada.
   getCardState(product: ProductCardItem): ProductCardState {
     let state = this.cardStates.get(product.id);
 
@@ -370,36 +381,37 @@ export class Home {
     return state;
   }
 
+  // Actualiza la cantidad elegida por el usuario para un producto concreto.
   setQuantity(product: ProductCardItem, quantity: number): void {
     this.getCardState(product).selectedQuantity = Number(quantity);
   }
 
+  // Cambia la imagen activa seleccionada dentro del carrusel del producto.
   selectImage(product: ProductCardItem, imageIndex: number): void {
     this.getCardState(product).currentImage = imageIndex;
   }
 
-  // Cambia a la siguiente imagen del producto
+  // Avanza a la siguiente imagen del producto en el mini carrusel.
   nextImage(product: ProductCardItem): void {
     const state = this.getCardState(product);
     state.currentImage = (state.currentImage + 1) % product.images.length;
   }
 
-  // Cambia a la imagen anterior del producto
+  // Retrocede a la imagen anterior del producto en el mini carrusel.
   previousImage(product: ProductCardItem): void {
     const state = this.getCardState(product);
     state.currentImage =
       (state.currentImage - 1 + product.images.length) % product.images.length;
   }
 
-  // Cambia el orden seleccionado
+  // Aplica el orden seleccionado por el usuario y recarga el lote visible.
   onSortChange() {
     this.applyLocalSort();
     this.visibleProducts = [];
-    this.currentPage = 1;
     this.loadMoreProducts();
   }
 
-  // Aplica lógica de ordenamiento local
+  // Ordena el conjunto filtrado según la estrategia actual del selector.
   applyLocalSort() {
     switch (this.selectedSort) {
       case 'price_asc':
@@ -419,24 +431,22 @@ export class Home {
     }
   }
 
-  // Devuelve el precio correcto del producto (con descuento si aplica)
+  // Devuelve el precio final del producto, aplicando promociones si existen.
   getProductPrice(product: ProductCardItem): number {
     return this.pricingService.getFinalPrice(product);
   }
 
+  // Indica si el producto tiene descuento vigente en la lógica de pricing.
   hasDiscount(product: ProductCardItem): boolean {
     return this.pricingService.hasDiscount(product);
   }
 
+  // Retorna la etiqueta visual del descuento, por ejemplo '-20%'.
   getDiscountLabel(product: ProductCardItem): string | null {
     return this.pricingService.getDiscountLabel(product);
   }
 
-  /**
-   * Valida si el producto cumple con los filtros seleccionados
-   * @param product El producto a evaluar.
-   * @param filters Los filtros seleccionados.
-   */
+  // Evalúa si un producto coincide con los filtros activos, incluyendo ofertas, novedades y géneros.
   matchesFilter(product: ProductCardItem, filters: string[]): boolean {
     if (filters.length === 0) {
       return true;
@@ -453,6 +463,13 @@ export class Home {
       return false;
     }
 
+    const genreFilters = filters.filter(filter => this.genreOptions.includes(filter));
+    if (genreFilters.length > 0 && !genreFilters.some(genre =>
+      product.details?.genre?.toLowerCase() === genre.toLowerCase()
+    )) {
+      return false;
+    }
+
     // Si solo está activo el filtro de ofertas, no hay más lógica que aplicar.
     if ((isOfferFilterActive || isNewFilterActive) && filters.length === 1) {
         return true;
@@ -465,64 +482,46 @@ export class Home {
       return false;
     }
 
-    // Obtener la lista de filtros estructurada del servicio.
-    const filtroList = this.filterService.filtroList;
-    let allFiltersMatch = true;
-
-    // Iterar sobre la lista de filtros para verificar cada grupo de opciones
-    for (const filtro of filtroList) {
-      if (!filtro.enabled) {
-        continue; // Saltar filtros deshabilitados
-      }
-
-      let filtroOptions: string[] = [];
-      if (filtro.options) {
-        filtroOptions = filtro.options;
-      } else if (filtro.subcategories) {
-        filtroOptions = filtro.subcategories.flatMap(sub => sub.options);
-      }
-      
-      // ✅ CORRECCIÓN: Los filtros de ofertas no están en `filtroList`, por lo que los ignoramos aquí.
-      const filtrosActivosEnGrupo = filters.filter(f => filtroOptions.includes(f) && f !== 'OFERTAS');
-
-      if (filtrosActivosEnGrupo.length > 0) {
-        let coincideConGrupo = false;
-
-        // Lógica de filtrado específica para cada título de filtro
-        if (filtro.title === 'Géneros') {
-          coincideConGrupo = filtrosActivosEnGrupo.some(f => product.details?.genre?.toLowerCase() === f.toLowerCase());
-        } else if (filtro.title === 'Administración') {
-          // Lógica de filtrado para administración, si aplica
-          coincideConGrupo = false; // Asumimos que los productos no tienen un campo de "Administración"
-        }
-
-        if (!coincideConGrupo) {
-          allFiltersMatch = false;
-          break; // No hay necesidad de seguir evaluando si un grupo ya no coincide.
-        }
-      }
-    }
-    
-    // Si no hay otros filtros seleccionados (además de ofertas), el resultado es verdadero.
-    // Esto es para que al quitar el filtro de ofertas, se muestren todos los productos.
-    if (allFiltersMatch && isOfferFilterActive) {
-      return true;
-    }
-
-    return allFiltersMatch;
+    return true;
   }
 
-  // Aplica filtros cuando cambian desde el componente
-  onFilterChange(selected: string[]) {
-    this.selectedFilters = selected;
-    this.applyFilters();
-
-    this.visibleProducts = [];
-    this.currentPage = 1;
-    this.loadMoreProducts();
+  // Devuelve si un género concreto está seleccionado en el filtro activo.
+  isGenreSelected(genre: string): boolean {
+    return this.selectedFilters.includes(genre);
   }
 
-  // Aplica filtros y ordenamiento actuales
+  // Calcula cuántos géneros activos hay en la selección actual.
+  get selectedGenreCount(): number {
+    return this.selectedFilters.filter(filter => this.genreOptions.includes(filter)).length;
+  }
+
+  // Indica si existe al menos un género en el filtro activo.
+  get hasSelectedGenres(): boolean {
+    return this.selectedGenreCount > 0;
+  }
+
+  // Agrega o quita un género del conjunto actual de filtros y notifica al servicio global.
+  toggleGenreFilter(genre: string, selected: boolean): void {
+    const filters = selected
+      ? [...new Set([...this.selectedFilters, genre])]
+      : this.selectedFilters.filter(filter => filter !== genre);
+
+    this.filterService.setFilters(filters);
+  }
+
+  // Elimina todos los filtros de género manteniendo el resto de filtros del catálogo.
+  clearGenreFilters(): void {
+    this.filterService.setFilters(
+      this.selectedFilters.filter(filter => !this.genreOptions.includes(filter))
+    );
+  }
+
+  // Cierra el popover del filtro cuando el usuario hace clic fuera de él.
+  closeGenreFilter(): void {
+    this.showGenreFilter = false;
+  }
+
+  // Recalcula la coleccion filtrada y vuelve a aplicar el orden actual.
   applyFilters() {
     if (this.selectedFilters.length === 0) {
       this.filteredProducts = [...this.allProducts];
@@ -535,18 +534,18 @@ export class Home {
     this.applyLocalSort();
   }
 
-  // Nuevo método para verificar si un producto es nuevo (menos de 30 días)
+  // Retorna si el producto debe mostrarse como novedad según su estado del dominio.
   isProductNew(product: ProductCardItem): boolean {
     return product.isNew;
   }
 
-  // Método para abrir el modal
+  // Abre el modal de detalle con el producto seleccionado.
   openModal(product: ProductCardItem) {
     this.selectedProduct = product;
     this.showModal = true;
   }
 
-  // Método para cerrar el modal
+  // Cierra el modal y limpia el producto activo del detalle.
   closeModal() {
     this.showModal = false;
     this.selectedProduct = null;

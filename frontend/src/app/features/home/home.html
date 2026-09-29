@@ -1,132 +1,85 @@
-<!-- Contenedor principal -->
-<section #scrollContainer (scroll)="onScroll()"
-  class="h-[calc(100vh-96px)] overflow-y-auto w-full bg-white px-4 py-6 mt-0">
+<!-- Contenedor principal del catálogo: controla scroll y cierre del popover cuando se hace click fuera -->
+<section #scrollContainer (scroll)="onScroll()" (document:click)="closeGenreFilter()"
+  class="mt-0 h-[calc(100vh-84px)] w-full overflow-y-auto bg-white px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mx-auto w-full max-w-[1800px]">
 
-  <!-- Ordenar -->
-  <div class="mb-4 grid grid-cols-1 gap-x-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-    <div class="mx-auto flex w-full max-w-[260px] justify-start px-1 sm:max-w-[280px] lg:max-w-[320px]">
-      <div class="flex items-center gap-1">
-        <label for="sort" class="text-xs text-gray-600">Ordenar por:</label>
-        <select id="sort" [(ngModel)]="selectedSort" (change)="onSortChange()"
-          class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-black bg-white">
-          <option *ngFor="let option of sortOptions" [value]="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <!-- Grid de productos -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-6">
-    <!-- Tarjeta -->
-    <!-- 1. El *ngFor se mueve a un <ng-container> -->
-    <ng-container *ngFor="let producto of visibleProducts">
-      <!-- 2. El *ngIf se queda en el div de la tarjeta -->
-      <div *ngIf="producto.isActive" class="w-full bg-white rounded overflow-hidden flex flex-col">
-        <!-- Contenido de la tarjeta -->
-        <div class="relative w-full max-w-[260px] sm:max-w-[280px] lg:max-w-[320px] mx-auto aspect-square overflow-hidden">
-          <img [src]="producto.images[getCardState(producto).currentImage]" [alt]="producto.name"
-            class="w-full h-full object-cover transition-all duration-[1200ms] ease-in-out" />
-          <div *ngIf="isProductNew(producto)"
-            class="absolute top-2 left-2 bg-green-500 text-white text-xs px-3 py-1 rounded-sm font-bold shadow z-20">
-            NUEVO
-          </div>
-          <div *ngIf="producto.stock === 0"
-            class="absolute top-2 right-2 bg-gray-900 text-white text-xs px-3 py-1 rounded-sm font-bold shadow z-20">
-            AGOTADO
-          </div>
-          <!-- Flecha izquierda -->
-          <button (click)="previousImage(producto)"
-            class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+    <!-- Carrusel principal de campañas promocionales de la home -->
+    <app-campaign-carousel *ngIf="campaignSlides.length > 0" [slides]="campaignSlides"></app-campaign-carousel>
 
-          <!-- Flecha derecha -->
-          <button (click)="nextImage(producto)"
-            class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/70 text-gray-700 rounded-full p-1 shadow hover:bg-white hover:text-black transition duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+    <!-- Toolbar del catálogo: filtros por género y ordenamiento -->
+    <section aria-label="Filtros y catálogo" class="mt-2">
+      <div class="mb-4 flex border-b border-gray-200 pb-4">
+        <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
+          <div class="relative flex flex-col gap-1" (click)="$event.stopPropagation()">
+            <span class="text-[11px] text-gray-500">Filtrar por</span>
+            <button type="button" (click)="showGenreFilter = !showGenreFilter"
+              [attr.aria-expanded]="showGenreFilter" aria-controls="genre-filter-options"
+              class="flex h-12 min-w-56 items-center justify-between border border-gray-400 bg-white px-4 text-left text-xs text-gray-900 transition hover:border-gray-700 focus:outline-none focus:ring-1 focus:ring-black">
+              <span>{{ selectedGenreCount || 'Todos' }} seleccionados</span>
+              <span aria-hidden="true" class="ml-4 text-base leading-none">⌄</span>
+            </button>
 
-          <!-- Oferta -->
-          <div *ngIf="hasDiscount(producto)"
-            class="absolute bottom-2 right-2 bg-red-500 text-white text-xs px-3 py-1 rounded font-bold shadow">
-            {{ getDiscountLabel(producto) || 'OFERTA' }}
-          </div>
-
-          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-            <div *ngFor="let image of producto.images; let i = index" (click)="selectImage(producto, i)"
-              class="w-2 h-2 rounded-full cursor-pointer transition-colors duration-300 hover:bg-black"
-              [class.bg-black]="i === getCardState(producto).currentImage" [class.bg-gray-200]="i !== getCardState(producto).currentImage">
+            <div *ngIf="showGenreFilter" id="genre-filter-options"
+              class="absolute left-0 top-full z-30 mt-1 w-72 border border-gray-300 bg-white p-3 shadow-lg">
+              <div class="mb-2 flex items-center justify-between border-b border-gray-200 pb-2">
+                <span class="text-xs font-medium text-gray-700">Géneros</span>
+                <button *ngIf="hasSelectedGenres" type="button"
+                  (click)="clearGenreFilters()" class="text-xs text-gray-500 underline hover:text-black">
+                  Limpiar
+                </button>
+              </div>
+              <label *ngFor="let genre of genreOptions" class="flex cursor-pointer items-center gap-2 py-2 text-xs text-gray-700">
+                <input type="checkbox" [checked]="isGenreSelected(genre)"
+                  (change)="toggleGenreFilter(genre, $any($event.target).checked)"
+                  class="h-4 w-4 accent-black" />
+                <span>{{ genre }}</span>
+              </label>
             </div>
           </div>
-        </div>
-
-        <div class="w-full max-w-[260px] sm:max-w-[280px] lg:max-w-[320px] mx-auto px-1 pt-2 pb-2 flex flex-col justify-between flex-1">
-          <div>
-            <h3 class="min-h-10 line-clamp-2 text-sm font-medium text-gray-700 leading-tight">
-              {{ producto.name }}
-            </h3>
-            <p class="mt-1 text-xs text-gray-500 truncate">
-              {{ producto.details.artist }} · {{ producto.details.format === 'vinyl' ? 'Vinilo' : 'CD' }}
-            </p>
-          </div>
-
-          <div class="flex min-h-6 items-center gap-2 mt-1">
-            <a class="flex items-center gap-2">
-              <p class="text-sm font-bold text-gray-900">
-                {{ formatPrice(getProductPrice(producto)) }}
-              </p>
-              <p *ngIf="hasDiscount(producto)" class="text-sm font-normal text-gray-400 line-through">
-                {{ formatPrice(producto.price) }}
-              </p>
-            </a>
-
-            <a (click)="openModal(producto)" class="ml-auto text-gray-500 hover:text-black transition">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span class="sr-only">Ver detalles</span>
-            </a>
-          </div>
-
-          <div class="mt-2 flex items-center gap-2">
-            <select [ngModel]="getCardState(producto).selectedQuantity"
-              (ngModelChange)="setQuantity(producto, $event)"
-              class="w-1/3 bg-gray-100 text-gray-900 text-sm py-2 px-2 rounded-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black">
-              <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
+          <div class="flex flex-col gap-1">
+            <label for="sort" class="text-[11px] text-gray-500">Ordenar por</label>
+            <select id="sort" [(ngModel)]="selectedSort" (change)="onSortChange()"
+              class="h-12 min-w-60 border border-gray-400 bg-white px-4 text-xs text-gray-900 transition hover:border-gray-700 focus:outline-none focus:ring-1 focus:ring-black">
+              <option *ngFor="let option of sortOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
             </select>
-
-            <button (click)="addToCart(producto, getCardState(producto).selectedQuantity)" [disabled]="producto.stock === 0"
-              [class.bg-gray-400]="producto.stock === 0" [class.hover:bg-gray-400]="producto.stock === 0"
-              [class.cursor-not-allowed]="producto.stock === 0"
-              class="w-2/3 bg-gray-900 text-white py-2 text-sm font-medium rounded-sm hover:bg-black transition">
-              <span *ngIf="producto.stock > 0">AÑADIR</span>
-              <span *ngIf="producto.stock === 0">AGOTADO</span>
-            </button>
           </div>
         </div>
       </div>
-    </ng-container>
 
-  </div>
+      <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ng-container *ngFor="let producto of visibleProducts">
+          <app-product-card
+            [product]="producto"
+            [currentImage]="getCardState(producto).currentImage"
+            [selectedQuantity]="getCardState(producto).selectedQuantity"
+            [finalPrice]="getProductPrice(producto)"
+            [hasDiscount]="hasDiscount(producto)"
+            [discountLabel]="getDiscountLabel(producto)"
+            [isProductNew]="isProductNew(producto)"
+            [isActive]="producto.isActive"
+            (previousImage)="previousImage(producto)"
+            (nextImage)="nextImage(producto)"
+            (selectImage)="selectImage(producto, $event)"
+            (quantityChange)="setQuantity(producto, $event)"
+            (addToCart)="addToCart(producto, $event)"
+            (openDetails)="openModal(producto)">
+          </app-product-card>
+        </ng-container>
+      </div>
+    </section>
 
-  <app-product-detail-modal [product]="selectedProduct" [show]="showModal"
-    (close)="closeModal()"></app-product-detail-modal>
+    <!-- Modal de detalle del producto para ver información completa antes de comprar -->
+    <app-product-detail-modal [product]="selectedProduct" [show]="showModal"
+      (close)="closeModal()"></app-product-detail-modal>
 
-  <!-- Loader -->
-  <div *ngIf="isLoadingMore" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-    <div class="flex flex-col items-center">
-      <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-black border-solid"></div>
-      <span class="mt-4 text-black font-medium text-sm">Cargando más productos...</span>
+    <!-- Loader visual mientras se agregan más productos en la paginación incremental -->
+    <div *ngIf="isLoadingMore" class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+      <div class="flex flex-col items-center">
+        <div class="h-14 w-14 animate-spin rounded-full border-4 border-gray-200 border-t-black"></div>
+        <span class="mt-4 text-sm font-medium text-black">Cargando más productos...</span>
+      </div>
     </div>
   </div>
 

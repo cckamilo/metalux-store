@@ -1,7 +1,7 @@
 import { Injectable, signal, effect, computed } from '@angular/core';
-import { CartItem } from '../models/cart-item.model';
+import { CartItem } from '../domain/cart-item.model';
 
-export type { CartItem } from '../models/cart-item.model';
+export type { CartItem } from '../domain/cart-item.model';
 
 const STORAGE_KEY = 'cart-items';
 

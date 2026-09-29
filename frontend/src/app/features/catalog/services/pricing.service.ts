@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Product } from '../models/product.model';
-import { Promotion } from '../models/promotion.model';
+import { Product } from '../domain/product.model';
+import { Promotion } from '../domain/promotion.model';
 import { promotions } from '../data/promotions.mock';
 
 @Injectable({

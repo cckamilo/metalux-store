@@ -1,4 +1,4 @@
-import { Promotion } from '../models/promotion.model';
+import { Promotion } from '../domain/promotion.model';
 
 export const promotions: Promotion[] = [
   {
@@ -8,7 +8,7 @@ export const promotions: Promotion[] = [
     discountType: 'percentage',
     value: 10,
     scope: 'store',
-    isActive: true,
+    isActive: false,
     canStack: false,
     display: {
       bannerEnabled: true,

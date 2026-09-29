@@ -1,0 +1,45 @@
+<section *ngIf="slides.length > 0" class="relative mb-4 overflow-hidden bg-gray-950 text-white shadow-sm"
+  aria-label="Campanas destacadas" aria-live="polite">
+  <div class="relative min-h-[280px] sm:min-h-[360px] lg:min-h-[430px]">
+    <img [src]="slides[activeIndex].imageUrl"
+      [alt]="slides[activeIndex].title"
+      class="absolute inset-0 h-full w-full object-cover opacity-65 transition-opacity duration-700" />
+    <div class="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-black/10"></div>
+
+    <div class="relative z-10 flex min-h-[280px] max-w-2xl flex-col justify-center px-6 py-12 sm:min-h-[360px] sm:px-12 lg:min-h-[430px] lg:px-16">
+      <p *ngIf="slides[activeIndex].eyebrow" class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-300">
+        {{ slides[activeIndex].eyebrow }}
+      </p>
+      <h2 class="max-w-xl text-3xl font-bold leading-tight sm:text-5xl">
+        {{ slides[activeIndex].title }}
+      </h2>
+      <p *ngIf="slides[activeIndex].description" class="mt-4 max-w-lg text-sm leading-relaxed text-gray-200 sm:text-base">
+        {{ slides[activeIndex].description }}
+      </p>
+      <button *ngIf="slides[activeIndex].cta" type="button"
+        (click)="handleCta(slides[activeIndex].cta)"
+        class="mt-6 w-fit bg-white px-5 py-3 text-xs font-bold uppercase tracking-wide text-gray-950 transition hover:bg-gray-200">
+        {{ slides[activeIndex].cta?.label }}
+      </button>
+    </div>
+
+    <div *ngIf="slides.length > 1" class="absolute inset-x-0 bottom-5 z-10 flex items-center justify-between px-5 sm:px-10">
+      <button type="button" (click)="previous()" aria-label="Campana anterior"
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-lg transition hover:bg-black/80">
+        <span aria-hidden="true">&#8592;</span>
+      </button>
+      <div class="flex items-center gap-2">
+        <button *ngFor="let slide of slides; let i = index" type="button"
+          (click)="select(i)" [attr.aria-label]="'Ver campana ' + (i + 1)"
+          [attr.aria-current]="i === activeIndex ? 'true' : null"
+          class="h-2 w-2 rounded-full bg-white/50 transition-all hover:bg-white"
+          [class.w-7]="i === activeIndex" [class.bg-white]="i === activeIndex">
+        </button>
+      </div>
+      <button type="button" (click)="next()" aria-label="Siguiente campana"
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-lg transition hover:bg-black/80">
+        <span aria-hidden="true">&#8594;</span>
+      </button>
+    </div>
+  </div>
+</section>

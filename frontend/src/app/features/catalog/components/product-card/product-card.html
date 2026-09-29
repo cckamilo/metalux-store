@@ -1,0 +1,88 @@
+<div *ngIf="isActive" class="w-full overflow-hidden rounded bg-white flex flex-col">
+  <div class="relative mx-auto aspect-square w-full max-w-[260px] overflow-hidden sm:max-w-[280px] lg:max-w-[320px]">
+    <img [src]="product.images[currentImage]" [alt]="product.name"
+      class="h-full w-full object-cover transition-all duration-[1200ms] ease-in-out" />
+
+    <div *ngIf="isProductNew"
+      class="absolute left-2 top-2 z-20 rounded-sm bg-green-500 px-3 py-1 text-xs font-bold text-white shadow">
+      NUEVO
+    </div>
+
+    <div *ngIf="product.stock === 0"
+      class="absolute right-2 top-2 z-20 rounded-sm bg-gray-900 px-3 py-1 text-xs font-bold text-white shadow">
+      AGOTADO
+    </div>
+
+    <button type="button" (click)="onPreviousImage()"
+      class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 p-1 text-gray-700 shadow transition hover:bg-white hover:text-black">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <button type="button" (click)="onNextImage()"
+      class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 p-1 text-gray-700 shadow transition hover:bg-white hover:text-black">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+
+    <div *ngIf="hasDiscount"
+      class="absolute bottom-2 right-2 rounded bg-red-500 px-3 py-1 text-xs font-bold text-white shadow">
+      {{ discountLabel || 'OFERTA' }}
+    </div>
+
+    <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2">
+      <div *ngFor="let image of product.images; let i = index" (click)="onSelectImage(i)"
+        class="h-2 w-2 cursor-pointer rounded-full transition-colors duration-300 hover:bg-black"
+        [class.bg-black]="i === currentImage" [class.bg-gray-200]="i !== currentImage">
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto flex w-full max-w-[260px] flex-1 flex-col justify-between px-1 pb-2 pt-2 sm:max-w-[280px] lg:max-w-[320px]">
+    <div>
+      <h3 class="line-clamp-2 min-h-10 text-sm font-medium leading-tight text-gray-700">
+        {{ product.name }}
+      </h3>
+      <p class="mt-1 truncate text-xs text-gray-500">
+        {{ product.details.artist }} · {{ product.details.format === 'vinyl' ? 'Vinilo' : 'CD' }}
+      </p>
+    </div>
+
+    <div class="mt-1 flex min-h-6 items-center gap-2">
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-bold text-gray-900">
+          {{ finalPrice | currency:'COP':'symbol-narrow':'1.0-0' }}
+        </p>
+        <p *ngIf="hasDiscount" class="text-sm font-normal text-gray-400 line-through">
+          {{ product.price | currency:'COP':'symbol-narrow':'1.0-0' }}
+        </p>
+      </div>
+
+      <button type="button" (click)="onOpenDetails()" class="ml-auto text-gray-500 transition hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="sr-only">Ver detalles</span>
+      </button>
+    </div>
+
+    <div class="mt-2 flex items-center gap-2">
+      <select [value]="selectedQuantity" (change)="onQuantityChange(+($any($event.target).value))"
+        class="w-1/3 rounded-sm border border-gray-300 bg-gray-100 px-2 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-black">
+        <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
+      </select>
+
+      <button type="button" (click)="onAddToCart()" [disabled]="product.stock === 0"
+        [class.bg-gray-400]="product.stock === 0" [class.hover:bg-gray-400]="product.stock === 0"
+        [class.cursor-not-allowed]="product.stock === 0"
+        class="w-2/3 rounded-sm bg-gray-900 py-2 text-sm font-medium text-white transition hover:bg-black">
+        <span *ngIf="product.stock > 0">AÑADIR</span>
+        <span *ngIf="product.stock === 0">AGOTADO</span>
+      </button>
+    </div>
+  </div>
+</div>
