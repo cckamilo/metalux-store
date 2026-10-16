@@ -1,86 +1,246 @@
 <!-- Contenedor principal del catálogo: controla scroll y cierre del popover cuando se hace click fuera -->
-<section #scrollContainer (scroll)="onScroll()" (document:click)="closeGenreFilter()"
-  class="mt-0 h-[calc(100vh-84px)] w-full overflow-y-auto bg-white px-4 py-6 sm:px-6 lg:px-8">
+<section (document:click)="closeSortMenu()"
+  class="w-full bg-white pb-12">
   <div class="mx-auto w-full max-w-[1800px]">
 
     <!-- Carrusel principal de campañas promocionales de la home -->
-    <app-campaign-carousel *ngIf="campaignSlides.length > 0" [slides]="campaignSlides"></app-campaign-carousel>
+    <app-campaign-carousel *ngIf="campaignSlides.length > 0" class="block"
+      [slides]="campaignSlides"></app-campaign-carousel>
 
-    <!-- Toolbar del catálogo: filtros por género y ordenamiento -->
-    <section aria-label="Filtros y catálogo" class="mt-2">
-      <div class="mb-4 flex border-b border-gray-200 pb-4">
-        <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
-          <div class="relative flex flex-col gap-1" (click)="$event.stopPropagation()">
-            <span class="text-[11px] text-gray-500">Filtrar por</span>
-            <button type="button" (click)="showGenreFilter = !showGenreFilter"
-              [attr.aria-expanded]="showGenreFilter" aria-controls="genre-filter-options"
-              class="flex h-12 min-w-56 items-center justify-between border border-gray-400 bg-white px-4 text-left text-xs text-gray-900 transition hover:border-gray-700 focus:outline-none focus:ring-1 focus:ring-black">
-              <span>{{ selectedGenreCount || 'Todos' }} seleccionados</span>
-              <span aria-hidden="true" class="ml-4 text-base leading-none">⌄</span>
+        <!-- Toolbar del catálogo: agrega los filtros de bandas, géneros, formatos y el selector de orden. -->
+    <section id="catalogo-productos" aria-label="Filtros y catálogo" class="relative z-10 mt-6 min-w-0 scroll-mt-[192px] px-4 sm:scroll-mt-[172px] sm:px-6 lg:px-8 xl:scroll-mt-[120px]">
+          <div class="lg:grid lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-8">
+            <button #filtersToggle type="button" (click)="showMobileFilters = !showMobileFilters"
+              [attr.aria-expanded]="showMobileFilters" aria-controls="catalog-filters"
+              class="mb-4 flex min-h-11 w-full items-center justify-between rounded border border-gray-300 px-4 text-sm font-semibold lg:hidden">
+              <span>{{ showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros' }} <span *ngIf="activeFilters.length">({{ activeFilters.length }})</span></span>
+              <span aria-hidden="true">{{ showMobileFilters ? '−' : '+' }}</span>
+            </button>
+            <aside id="catalog-filters" aria-label="Filtros del catálogo"
+              [ngClass]="showMobileFilters ? 'block' : 'hidden'"
+              class="mb-6 rounded border border-gray-200 p-4 lg:mb-0 lg:block lg:rounded-none lg:border-0 lg:p-0 lg:pt-[60px]">
+              <div class="flex w-full flex-col gap-3">
+          <!-- Los conteos representan discos con stock, no unidades de inventario. -->
+          <div *ngIf="selectedFilters.bands.enabled" class="relative flex flex-col" (click)="$event.stopPropagation()">
+            <span class="sr-only">Bandas</span>
+            <button type="button" (click)="showBandFilter = !showBandFilter"
+              [attr.aria-expanded]="showBandFilter" aria-controls="band-filter-options"
+              class="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-transparent px-0 text-left text-xs font-medium uppercase tracking-[0.12em] text-gray-900 transition hover:border-gray-900 focus:outline-none focus:ring-0">
+              <span>BANDAS</span>
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="ml-4 h-4 w-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none"
+                [class.rotate-180]="showBandFilter">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </button>
 
-            <div *ngIf="showGenreFilter" id="genre-filter-options"
-              class="absolute left-0 top-full z-30 mt-1 w-72 border border-gray-300 bg-white p-3 shadow-lg">
-              <div class="mb-2 flex items-center justify-between border-b border-gray-200 pb-2">
-                <span class="text-xs font-medium text-gray-700">Géneros</span>
+            <div *ngIf="selectedFilters.bands.enabled && showBandFilter" id="band-filter-options"
+              class="w-full py-2">
+              <div *ngIf="hasSelectedBands" class="mb-2 flex justify-end border-b border-gray-200 pb-2">
+                <button *ngIf="hasSelectedBands" type="button"
+                  (click)="clearBandFilters()" class="text-xs text-gray-500 underline hover:text-black">
+                  Limpiar
+                </button>
+              </div>
+
+              <div class="mb-2">
+                <input type="search" [(ngModel)]="bandSearchTerm" placeholder="Buscar banda" aria-label="Buscar banda"
+                  class="h-10 w-full rounded border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-black" />
+              </div>
+
+              <div id="band-options-list">
+              <label *ngFor="let band of visibleBandOptions" class="flex min-h-8 cursor-pointer items-center gap-2 py-1 text-xs text-gray-700">
+                <input type="checkbox" [checked]="isBandSelected(band)"
+                  (change)="toggleBandFilter(band, $any($event.target).checked)"
+                  class="h-4 w-4 accent-black" />
+                <span class="min-w-0 flex-1">{{ band }}</span>
+                <span class="shrink-0 text-[11px] tabular-nums text-gray-400" aria-hidden="true">{{ getBandProductCount(band) }}</span>
+                <span class="sr-only">({{ getBandProductCount(band) }} {{ getBandProductCount(band) === 1 ? 'disco' : 'discos' }})</span>
+              </label>
+              </div>
+
+              <div *ngIf="filteredBandOptions.length === 0" role="status" class="pt-2 text-xs text-gray-500">
+                No se encontraron bandas.
+              </div>
+              <button *ngIf="!bandSearchTerm.trim() && availableBandOptions.length > initialBandLimit"
+                type="button" (click)="showAllBands = !showAllBands" [attr.aria-expanded]="showAllBands"
+                aria-controls="band-options-list"
+                class="min-h-9 text-left text-xs font-semibold text-gray-700 underline underline-offset-2 hover:text-black">
+                {{ showAllBands ? 'Ver menos bandas' : 'Ver las ' + availableBandOptions.length + ' bandas' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtro de géneros: permite limitar el catálogo por estilo musical. -->
+          <div *ngIf="selectedFilters.genres.enabled" class="relative flex flex-col" (click)="$event.stopPropagation()">
+            <span class="sr-only">Géneros</span>
+            <button type="button" (click)="showGenreFilter = !showGenreFilter"
+              [attr.aria-expanded]="showGenreFilter" aria-controls="genre-filter-options"
+              class="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-transparent px-0 text-left text-xs font-medium uppercase tracking-[0.12em] text-gray-900 transition hover:border-gray-900 focus:outline-none focus:ring-0">
+              <span>GÉNEROS</span>
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="ml-4 h-4 w-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none"
+                [class.rotate-180]="showGenreFilter">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            <div *ngIf="selectedFilters.genres.enabled && showGenreFilter" id="genre-filter-options"
+              class="w-full py-2">
+              <div *ngIf="hasSelectedGenres" class="mb-2 flex justify-end border-b border-gray-200 pb-2">
                 <button *ngIf="hasSelectedGenres" type="button"
                   (click)="clearGenreFilters()" class="text-xs text-gray-500 underline hover:text-black">
                   Limpiar
                 </button>
               </div>
-              <label *ngFor="let genre of genreOptions" class="flex cursor-pointer items-center gap-2 py-2 text-xs text-gray-700">
+              <div class="mb-2">
+                <input type="search" [(ngModel)]="genreSearchTerm" placeholder="Buscar género" aria-label="Buscar género"
+                  class="h-10 w-full rounded border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-black" />
+              </div>
+              <div id="genre-options-list">
+              <label *ngFor="let genre of visibleGenreOptions" class="flex min-h-8 cursor-pointer items-center gap-2 py-1 text-xs text-gray-700">
                 <input type="checkbox" [checked]="isGenreSelected(genre)"
                   (change)="toggleGenreFilter(genre, $any($event.target).checked)"
                   class="h-4 w-4 accent-black" />
-                <span>{{ genre }}</span>
+                <span class="min-w-0 flex-1">{{ genre }}</span>
+                <span class="shrink-0 text-[11px] tabular-nums text-gray-400" aria-hidden="true">{{ getGenreProductCount(genre) }}</span>
+                <span class="sr-only">({{ getGenreProductCount(genre) }} {{ getGenreProductCount(genre) === 1 ? 'disco' : 'discos' }})</span>
+              </label>
+              </div>
+              <div *ngIf="filteredGenreOptions.length === 0" role="status" class="pt-2 text-xs text-gray-500">
+                No se encontraron géneros.
+              </div>
+              <button *ngIf="!genreSearchTerm.trim() && availableGenreOptions.length > initialGenreLimit"
+                type="button" (click)="showAllGenres = !showAllGenres" [attr.aria-expanded]="showAllGenres"
+                aria-controls="genre-options-list"
+                class="min-h-9 text-left text-xs font-semibold text-gray-700 underline underline-offset-2 hover:text-black">
+                {{ showAllGenres ? 'Ver menos géneros' : 'Ver los ' + availableGenreOptions.length + ' géneros' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtro de formato: separa vinilo y CD para una navegación más específica. -->
+          <div *ngIf="selectedFilters.formats.enabled" class="relative flex flex-col" (click)="$event.stopPropagation()">
+            <span class="sr-only">Formato</span>
+            <button type="button" (click)="showFormatFilter = !showFormatFilter"
+              [attr.aria-expanded]="showFormatFilter" aria-controls="format-filter-options"
+              class="flex h-11 w-full items-center justify-between border-b border-gray-200 bg-transparent px-0 text-left text-xs font-medium uppercase tracking-[0.12em] text-gray-900 transition hover:border-gray-900 focus:outline-none focus:ring-0">
+              <span>FORMATO</span>
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="ml-4 h-4 w-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none"
+                [class.rotate-180]="showFormatFilter">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            <div *ngIf="selectedFilters.formats.enabled && showFormatFilter" id="format-filter-options"
+              class="w-full py-2">
+              <div *ngIf="hasSelectedFormats" class="mb-2 flex justify-end border-b border-gray-200 pb-2">
+                <button *ngIf="hasSelectedFormats" type="button"
+                  (click)="clearFormatFilters()" class="text-xs text-gray-500 underline hover:text-black">
+                  Limpiar
+                </button>
+              </div>
+              <label *ngFor="let format of formatOptions" class="flex cursor-pointer items-center gap-2 py-2 text-xs text-gray-700">
+                <input type="checkbox" [checked]="isFormatSelected(format)"
+                  (change)="toggleFormatFilter(format, $any($event.target).checked)"
+                  class="h-4 w-4 accent-black" />
+                <span>{{ format }}</span>
               </label>
             </div>
           </div>
-          <div class="flex flex-col gap-1">
-            <label for="sort" class="text-[11px] text-gray-500">Ordenar por</label>
-            <select id="sort" [(ngModel)]="selectedSort" (change)="onSortChange()"
-              class="h-12 min-w-60 border border-gray-400 bg-white px-4 text-xs text-gray-900 transition hover:border-gray-700 focus:outline-none focus:ring-1 focus:ring-black">
-              <option *ngFor="let option of sortOptions" [value]="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <button *ngIf="showMobileFilters" type="button" (click)="showMobileFilters = false; filtersToggle.focus()"
+            class="min-h-11 rounded bg-black px-4 py-3 text-sm font-semibold text-white lg:hidden">
+            Ver {{ filteredProducts.length }} {{ filteredProducts.length === 1 ? 'producto' : 'productos' }}
+          </button>
+          </div>
+        </aside>
+
+        <div class="min-w-0">
+          <div class="relative z-40 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p id="catalog-results" role="status" aria-atomic="true" class="text-sm text-gray-600">
+              Mostrando <span class="font-semibold text-gray-900">{{ visibleProducts.length }}</span> de
+              <span class="font-semibold text-gray-900">{{ filteredProducts.length }}</span>
+              {{ filteredProducts.length === 1 ? 'producto' : 'productos' }}
+            </p>
+            <!-- Ordenamiento del catálogo: define la estrategia visual en la que se muestran los productos. -->
+            <div class="relative flex w-full max-w-[280px] flex-row items-center gap-3">
+              <label for="sort" class="shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-gray-900">Ordenar por</label>
+              <button type="button" id="sort" (click)="$event.stopPropagation(); sortMenuOpen = !sortMenuOpen"
+                [attr.aria-expanded]="sortMenuOpen" aria-haspopup="listbox"
+                class="flex h-11 min-w-0 flex-1 items-center justify-between border-0 border-b border-gray-200 bg-transparent px-0 text-left text-xs text-gray-900 transition hover:border-gray-900 focus:outline-none focus:ring-0">
+                <span>{{ selectedSortLabel }}</span>
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="ml-3 h-4 w-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none"
+                  [class.rotate-180]="sortMenuOpen">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              <div *ngIf="sortMenuOpen" role="listbox" aria-label="Ordenar por"
+                class="absolute left-0 top-full z-30 mt-0 w-full border border-gray-200 bg-white shadow-lg lg:left-0">
+                <button *ngFor="let option of sortOptions" type="button" role="option"
+                  [attr.aria-selected]="selectedSort === option.value"
+                  (click)="selectSort(option.value)"
+                  class="block w-full px-3 py-2 text-left text-xs text-gray-900 transition hover:bg-gray-100">
+                  {{ option.label }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+      <div *ngIf="activeFilters.length > 0" aria-label="Filtros activos" class="mb-6 flex flex-wrap items-center gap-2">
+        <button *ngFor="let filter of activeFilters; trackBy: trackFilter" type="button" (click)="removeFilter(filter)"
+          [attr.aria-label]="'Quitar filtro: ' + filter.label"
+          class="flex min-h-11 max-w-full items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-left text-xs text-gray-700 transition hover:border-black focus-visible:outline-2 focus-visible:outline-black">
+          <span class="min-w-0 break-words [overflow-wrap:anywhere]">{{ filter.label }}</span>
+          <span aria-hidden="true" class="shrink-0 text-base">&times;</span>
+        </button>
+        <button type="button" (click)="clearActiveFilters()"
+          class="min-h-11 px-2 text-xs font-medium text-gray-700 underline underline-offset-4 hover:text-black">
+          Limpiar filtros
+        </button>
+      </div>
+      <!-- Grid principal de productos: se renderiza el lote actual y cada tarjeta maneja su propio estado visual. -->
+      <div id="catalog-grid" [attr.aria-busy]="isLoadingMore" class="grid grid-cols-2 items-stretch gap-x-4 gap-y-8 lg:grid-cols-3 xl:grid-cols-4">
         <ng-container *ngFor="let producto of visibleProducts">
           <app-product-card
+            *ngIf="producto.stock > 0"
             [product]="producto"
-            [currentImage]="getCardState(producto).currentImage"
-            [selectedQuantity]="getCardState(producto).selectedQuantity"
             [finalPrice]="getProductPrice(producto)"
             [hasDiscount]="hasDiscount(producto)"
             [discountLabel]="getDiscountLabel(producto)"
             [isProductNew]="isProductNew(producto)"
             [isActive]="producto.isActive"
-            (previousImage)="previousImage(producto)"
-            (nextImage)="nextImage(producto)"
-            (selectImage)="selectImage(producto, $event)"
-            (quantityChange)="setQuantity(producto, $event)"
             (addToCart)="addToCart(producto, $event)"
             (openDetails)="openModal(producto)">
           </app-product-card>
         </ng-container>
       </div>
+      <div *ngIf="visibleProducts.length < filteredProducts.length" class="mt-10 flex justify-center">
+        <button type="button" (click)="loadMoreProducts()" [disabled]="isLoadingMore"
+          aria-controls="catalog-grid" aria-describedby="catalog-results"
+          class="flex min-h-11 items-center justify-center gap-2 rounded border border-gray-900 px-8 py-3 text-sm font-semibold text-gray-900 transition hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60">
+          <span *ngIf="isLoadingMore" aria-hidden="true" class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+          {{ isLoadingMore ? 'Cargando productos...' : 'Ver más productos' }}
+        </button>
+      </div>
+      <div *ngIf="filteredProducts.length === 0" role="status" class="py-16 text-center">
+        <p class="text-sm font-medium text-gray-900">No encontramos productos con esta búsqueda y filtros.</p>
+        <p class="mt-2 text-sm text-gray-500">Prueba con otra banda o álbum, o cambia los filtros seleccionados.</p>
+      </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Modal de detalle del producto para ver información completa antes de comprar -->
+    <!-- Modal de detalle del producto para ver información completa antes de comprar. -->
     <app-product-detail-modal [product]="selectedProduct" [show]="showModal"
       (close)="closeModal()"></app-product-detail-modal>
 
-    <!-- Loader visual mientras se agregan más productos en la paginación incremental -->
-    <div *ngIf="isLoadingMore" class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
-      <div class="flex flex-col items-center">
-        <div class="h-14 w-14 animate-spin rounded-full border-4 border-gray-200 border-t-black"></div>
-        <span class="mt-4 text-sm font-medium text-black">Cargando más productos...</span>
-      </div>
-    </div>
   </div>
 
 </section>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MusicDetails, Product } from '../../domain/product.model';
+import { catalogConfig } from '../../config/catalog.config';
 
 export type ProductCardItem = Omit<Product, 'details'> & {
   details: MusicDetails;
@@ -9,44 +10,28 @@ export type ProductCardItem = Omit<Product, 'details'> & {
 @Component({
   standalone: true,
   selector: 'app-product-card',
+  host: { class: 'block h-full min-w-0 w-full' },
   imports: [CommonModule],
   templateUrl: './product-card.html'
 })
 export class ProductCardComponent {
   @Input({ required: true }) product!: ProductCardItem;
-  @Input() currentImage = 0;
-  @Input() selectedQuantity = 1;
   @Input() finalPrice = 0;
   @Input() hasDiscount = false;
   @Input() discountLabel: string | null = null;
   @Input() isProductNew = false;
   @Input() isActive = true;
+  @Input() lowStockThreshold = catalogConfig.lowStockThreshold;
 
-  @Output() previousImage = new EventEmitter<void>();
-  @Output() nextImage = new EventEmitter<void>();
-  @Output() selectImage = new EventEmitter<number>();
-  @Output() quantityChange = new EventEmitter<number>();
+  formatPrice(price: number): string {
+    return '$' + price.toLocaleString('es-CO');
+  }
+
   @Output() addToCart = new EventEmitter<number>();
   @Output() openDetails = new EventEmitter<void>();
 
-  onPreviousImage(): void {
-    this.previousImage.emit();
-  }
-
-  onNextImage(): void {
-    this.nextImage.emit();
-  }
-
-  onSelectImage(index: number): void {
-    this.selectImage.emit(index);
-  }
-
-  onQuantityChange(quantity: number): void {
-    this.quantityChange.emit(quantity);
-  }
-
   onAddToCart(): void {
-    this.addToCart.emit(this.selectedQuantity);
+    this.addToCart.emit(1);
   }
 
   onOpenDetails(): void {

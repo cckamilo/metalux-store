@@ -2,6 +2,13 @@ export type ProductType = 'music' | 'clothing' | 'accessory';
 export type MusicFormat = 'vinyl' | 'cd';
 export type ProductCondition = 'new' | 'used' | 'collector';
 
+export interface VinylColor {
+  name: string;
+  // Representative swatch color for mixed finishes and picture discs.
+  hex: string;
+  secondaryHex?: string;
+}
+
 export interface Category {
   id: number;
   name: string;
@@ -20,6 +27,8 @@ export interface MusicDetails {
   discCount?: number;
   condition?: ProductCondition;
   edition?: string;
+  vinylColor?: VinylColor;
+  vinylColors?: (VinylColor & { imageIndex: number })[];
 }
 
 export interface ClothingDetails {

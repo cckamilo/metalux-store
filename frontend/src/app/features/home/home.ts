@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Cart, CartItem } from '../cart/services/cart';
-import { ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CatalogFilterService } from '../../core/services/catalog-filter/catalog-filter';
 import { ProductDetailModal } from '../../shared/components/product-detail-modal/product-detail-modal';
@@ -9,20 +9,20 @@ import { CampaignCarousel } from '../marketing/components/campaign-carousel/camp
 import { CampaignSlide } from '../marketing/domain/campaign.model';
 import { CampaignService } from '../marketing/services/campaign.service';
 import { ProductCardComponent, ProductCardItem } from '../catalog/components/product-card/product-card';
-import { Category, Product } from '../catalog/domain/product.model';
+import { Product } from '../catalog/domain/product.model';
 import { PricingService } from '../catalog/services/pricing.service';
+import { CatalogFilterState } from '../../core/services/catalog-filter/catalog-filter';
+import { productsMock } from '../catalog/data/products.mock';
 
 interface ProductCardState {
   currentImage: number;
-  selectedQuantity: number;
 }
 
-const musicCategory: Category = {
-  id: 1,
-  name: 'Música',
-  slug: 'musica',
-  isActive: true
-};
+interface ActiveFilter {
+  kind: 'bands' | 'genres' | 'formats' | 'search' | 'collection';
+  value: string;
+  label: string;
+}
 
 @Component({
   standalone: true,
@@ -30,24 +30,47 @@ const musicCategory: Category = {
   imports: [CommonModule, FormsModule, ProductDetailModal, CampaignCarousel, ProductCardComponent],
   templateUrl: './home.html'
 })
-export class Home {
-  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+export class Home implements OnInit, OnDestroy {
+  private readonly destroyRef = inject(DestroyRef);
+  private loadTimeout?: ReturnType<typeof setTimeout>;
 
-  // Constructor con dependencias para carrito, detección de cambios y servicio de filtros
+  // Constructor con dependencias para carrito y catálogo.
   constructor(
     private cart: Cart,
-    private cdr: ChangeDetectorRef,
     private filterService: CatalogFilterService,
     private pricingService: PricingService,
     private campaignService: CampaignService
   ) {
     this.campaignSlides = this.campaignService.getHomeCarouselSlides();
+    this.filterService.hydrateBandOptionsFromProducts(this.products);
+    this.bandOptions = this.filterService.bandOptions;
     this.genreOptions = this.filterService.genreOptions;
+    this.formatOptions = this.filterService.formatOptions;
+    this.selectedFilters = this.filterService.getFilters();
   }
 
+  // Estado actual del orden visual del catálogo.
   selectedSort = 'relevance';
-  showGenreFilter = false;
+  sortMenuOpen = false;
+  // Controla la visibilidad de cada popover de filtro.
+  showBandFilter = true;
+  showGenreFilter = true;
+  showFormatFilter = true;
+  showMobileFilters = false;
+  readonly initialBandLimit = 7;
+  showAllBands = false;
+  bandSearchTerm = '';
+  readonly initialGenreLimit = 7;
+  showAllGenres = false;
+  genreSearchTerm = '';
+  readonly bandOptions: string[];
   readonly genreOptions: string[];
+  readonly formatOptions: string[];
+  selectedFilters: CatalogFilterState = {
+    bands: { enabled: true, values: [] },
+    genres: { enabled: true, values: [] },
+    formats: { enabled: true, values: [] }
+  };
   // Propiedades para el modal
   showModal = false;
   selectedProduct: ProductCardItem | null = null;
@@ -61,354 +84,142 @@ export class Home {
     { label: 'Más recientes', value: 'newest' },
   ];
 
-  products: ProductCardItem[] = [
-    {
-      id: 1,
-      name: 'From Mars To Sirius',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Gojira',
-        format: 'vinyl',
-        genre: 'Progressive Metal',
-        releaseYear: 2005,
-        releaseDate: '2005-09-27',
-        label: 'Listenable Records',
-        discCount: 2,
-        condition: 'new'
-      },
-      price: 105000,
-      description: 'Edición en vinilo del clásico álbum de Gojira, con sonido progresivo y atmósfera intensa.',
-      stock: 0,
-      images: [
-        'https://f4.bcbits.com/img/0042534543_10.jpg',
-        'https://f4.bcbits.com/img/0013928875_10.jpg'
-      ],
-      isActive: true,
-      isNew: true
-    },
-    {
-      id: 2,
-      name: 'Slaughter of the Soul',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'At The Gates',
-        format: 'vinyl',
-        genre: 'Melodic Death Metal',
-        releaseYear: 1995,
-        releaseDate: '1995-11-14',
-        label: 'Earache Records',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 95000,
-      description: 'Obra esencial del death metal melódico sueco, disponible en una edición de vinilo para coleccionistas.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0037369395_10.jpg',
-        'https://f4.bcbits.com/img/a2024836109_5.jpg',
-        'https://f4.bcbits.com/img/0008114998_10.jpg',
-      ],
-      isActive: true,
-      isNew: true
-    },
-    {
-      id: 3,
-      name: 'The Way of All Flesh',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Gojira',
-        format: 'vinyl',
-        genre: 'Progressive Metal',
-        releaseYear: 2008,
-        releaseDate: '2008-10-13',
-        label: 'Listenable Records',
-        discCount: 2,
-        condition: 'new'
-      },
-      price: 110000,
-      description: 'Álbum de Gojira con una mezcla poderosa de metal progresivo, precisión rítmica y pasajes atmosféricos.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0040270533_10.jpg',
-        'https://f4.bcbits.com/img/0013928710_10.jpg'
-      ],
-      isActive: true,
-      isNew: true
-    },
-    {
-      id: 4,
-      name: 'Fallen Angel Of Doom',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Blasphemy',
-        format: 'vinyl',
-        genre: 'War Metal',
-        releaseYear: 1990,
-        releaseDate: '1990-10-01',
-        label: 'Wild Rags Records',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 90000,
-      description: 'Pieza fundamental del war metal canadiense, presentada en formato vinilo para una colección extrema.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0047466366_10.jpg',
-        'https://f4.bcbits.com/img/a0064561049_5.jpg'
-      ],
-      isActive: true,
-      isNew: false
-    },
-    {
-      id: 5,
-      name: 'Pro Xristou',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Rotting Christ',
-        format: 'vinyl',
-        genre: 'Black Metal',
-        releaseYear: 2024,
-        releaseDate: '2024-05-24',
-        label: 'Season of Mist',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 115000,
-      description: 'Lanzamiento reciente de Rotting Christ con una propuesta oscura, épica y profundamente melódica.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0035139854_10.jpg',
-        'https://f4.bcbits.com/img/0035139793_10.jpg'
-      ],
-      isActive: true,
-      isNew: false
-    },
-    {
-      id: 6,
-      name: 'Left Hand Path',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Entombed',
-        format: 'vinyl',
-        genre: 'Death Metal',
-        releaseYear: 1990,
-        releaseDate: '1990-06-04',
-        label: 'Earache Records',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 95000,
-      description: 'Clásico del death metal sueco, reconocido por sus guitarras densas y su sonido crudo e influyente.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0031611650_10.jpg',
-        'https://f4.bcbits.com/img/0042673750_10.jpg',
-        'https://f4.bcbits.com/img/0027919700_10.jpg',
-      ],
-      isActive: true,
-      isNew: false
-    },
-    {
-      id: 7,
-      name: 'Melissa',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Mercyful Fate',
-        format: 'vinyl',
-        genre: 'Heavy Metal',
-        releaseYear: 1983,
-        releaseDate: '1983-10-30',
-        label: 'Roadrunner Records',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 100000,
-      description: 'Debut histórico de Mercyful Fate, una referencia del heavy metal oscuro y teatral de los años ochenta.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0041204342_10.jpg',
-        'https://f4.bcbits.com/img/a1613378443_5.jpg'       
-      ],
-      isActive: true,
-      isNew: false
-    },
-    {
-      id: 8,
-      name: 'Necroticism – Descanting the Insalubrious',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Carcass',
-        format: 'vinyl',
-        genre: 'Death Metal',
-        releaseYear: 1991,
-        releaseDate: '1991-10-01',
-        label: 'Earache Records',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 110000,
-      description: 'Álbum esencial de Carcass, donde el death metal y el grindcore se encuentran con composiciones complejas.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0046581314_10.jpg',
-        'https://f4.bcbits.com/img/0041935587_10.jpg',
-        'https://f4.bcbits.com/img/0024791282_10.jpg',
-        'https://f4.bcbits.com/img/0042673716_10.jpg'
-      ],
-      isActive: true,
-      isNew: false
-    },
-    {
-      id: 9,
-      name: 'Don\'t Break the Oath',
-      category: musicCategory,
-      details: {
-        type: 'music',
-        artist: 'Mercyful Fate',
-        format: 'vinyl',
-        genre: 'Heavy Metal',
-        releaseYear: 1984,
-        releaseDate: '1984-09-07',
-        label: 'Roadrunner Records',
-        discCount: 1,
-        condition: 'new'
-      },
-      price: 100000,
-      description: 'Clásico de Mercyful Fate con una identidad oscura, riffs memorables y una interpretación vocal inconfundible.',
-      stock: 20,
-      images: [
-        'https://f4.bcbits.com/img/0041204391_10.jpg',
-        'https://f4.bcbits.com/img/a0621509914_5.jpg'
-      ],
-      isActive: true,
-      isNew: false
-    }
+  products: ProductCardItem[] = productsMock;
 
-  ];
-
-  // Control de scroll y paginación
+  // Paginación incremental bajo demanda.
   isLoadingMore = false;
   visibleProducts: ProductCardItem[] = [];
   itemsPerPage = 9;
 
   // Filtros seleccionados y productos filtrados
-  selectedFilters: string[] = [];
   allProducts: ProductCardItem[] = this.products; // copia original sin filtrar
   filteredProducts: ProductCardItem[] = []; // productos luego de filtros
 
-  // Hook de inicialización: prepara los productos visibles y subscribes los filtros del servicio global.
-  ngAfterViewInit(): void {
-    this.filteredProducts = [...this.products];
-    this.loadMoreProducts();
-    this.cdr.detectChanges();
-
-    // Escucha cambios de filtros desde el servicio y recarga productos
-    this.filterService.filters$.subscribe((filters: string[]) => {
-      const scrollTop = this.scrollContainer.nativeElement.scrollTop;
+  ngOnInit(): void {
+    this.filterService.filters$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filters: CatalogFilterState) => {
       this.selectedFilters = filters;
       this.applyFilters();
-      this.refreshVisibleProducts(scrollTop);
+      this.refreshVisibleProducts();
     });
   }
 
-  // Detecta el fin del scroll para pedir más productos y mantener la paginación incremental.
-  onScroll() {
-    const el = this.scrollContainer.nativeElement;
-    const limite = el.scrollHeight - el.clientHeight - 100;
+  ngOnDestroy(): void {
+    clearTimeout(this.loadTimeout);
+  }
 
-    if (el.scrollTop >= limite) {
-      this.loadMoreProducts();
+  get activeFilters(): ActiveFilter[] {
+    const filters: ActiveFilter[] = [];
+    const query = this.selectedFilters.searchQuery?.trim();
+    if (query) {
+      filters.push({ kind: 'search', value: query, label: `Búsqueda: ${query}` });
+    }
+    if (this.selectedFilters.collection) {
+      filters.push({
+        kind: 'collection',
+        value: this.selectedFilters.collection,
+        label: this.selectedFilters.collection === 'new' ? 'Novedades' : 'Ofertas'
+      });
+    }
+    for (const kind of ['bands', 'genres', 'formats'] as const) {
+      if (this.selectedFilters[kind].enabled) {
+        filters.push(...this.selectedFilters[kind].values.map(value => ({ kind, value, label: value })));
+      }
+    }
+    return filters;
+  }
+
+  removeFilter(filter: ActiveFilter): void {
+    switch (filter.kind) {
+      case 'search': this.filterService.setSearchQuery(''); break;
+      case 'collection': this.filterService.setCatalogFilterConfiguration({ collection: undefined }); break;
+      case 'bands': this.filterService.toggleBand(filter.value, false); break;
+      case 'genres': this.filterService.toggleGenre(filter.value, false); break;
+      case 'formats': this.filterService.toggleFormat(filter.value, false); break;
     }
   }
 
-  // Añade el siguiente lote de productos a la vista visible usando paginación incremental.
+  trackFilter(_index: number, filter: ActiveFilter): string {
+    return `${filter.kind}:${filter.value}`;
+  }
+
+  clearActiveFilters(): void {
+    this.filterService.setCatalogFilterConfiguration({
+      searchQuery: '',
+      collection: undefined,
+      bands: { ...this.selectedFilters.bands, values: [] },
+      genres: { ...this.selectedFilters.genres, values: [] },
+      formats: { ...this.selectedFilters.formats, values: [] }
+    });
+  }
+
+  // Añade el siguiente bloque de productos visibles para mantener la paginación incremental.
   loadMoreProducts() {
     if (this.isLoadingMore) return;
     if (this.visibleProducts.length >= this.filteredProducts.length) return;
 
     this.isLoadingMore = true;
 
-    setTimeout(() => {
+    this.loadTimeout = setTimeout(() => {
       const nextLote = this.filteredProducts.slice(
         this.visibleProducts.length,
         this.visibleProducts.length + this.itemsPerPage
       );
       this.visibleProducts = [...this.visibleProducts, ...nextLote];
       this.isLoadingMore = false;
+      this.loadTimeout = undefined;
     }, 300);
   }
 
-  private refreshVisibleProducts(scrollTop: number): void {
+  // Reinicia el lote visible y cancela cargas pendientes al cambiar filtros u orden.
+  private refreshVisibleProducts(): void {
+    clearTimeout(this.loadTimeout);
+    this.loadTimeout = undefined;
     this.isLoadingMore = false;
     this.visibleProducts = this.filteredProducts.slice(0, this.itemsPerPage);
-
-    requestAnimationFrame(() => {
-      const el = this.scrollContainer.nativeElement;
-      const maxScrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
-      el.scrollTop = Math.min(scrollTop, maxScrollTop);
-    });
   }
 
-  // Convierte el producto visual en un item del carrito con la cantidad actual y el precio final.
+  // Convierte el producto visual en un item del carrito con una unidad y el precio final.
   addToCart(product: ProductCardItem, quantity: number) {
     const item: CartItem = {
       id: product.id,
       name: product.name,
       price: this.getProductPrice(product),
       image: product.images[0],
-      quantity: Number(quantity),
+      quantity: 1,
     };
     this.cart.addItem(item);
   }
 
-  // Devuelve el estado visual del producto para controlar imagen activa y cantidad seleccionada.
+  // Devuelve el estado visual del producto para controlar la imagen activa.
   getCardState(product: ProductCardItem): ProductCardState {
     let state = this.cardStates.get(product.id);
 
     if (!state) {
-      state = { currentImage: 0, selectedQuantity: 1 };
+      state = { currentImage: 0 };
       this.cardStates.set(product.id, state);
     }
 
     return state;
   }
 
-  // Actualiza la cantidad elegida por el usuario para un producto concreto.
-  setQuantity(product: ProductCardItem, quantity: number): void {
-    this.getCardState(product).selectedQuantity = Number(quantity);
-  }
-
-  // Cambia la imagen activa seleccionada dentro del carrusel del producto.
-  selectImage(product: ProductCardItem, imageIndex: number): void {
-    this.getCardState(product).currentImage = imageIndex;
-  }
-
-  // Avanza a la siguiente imagen del producto en el mini carrusel.
-  nextImage(product: ProductCardItem): void {
-    const state = this.getCardState(product);
-    state.currentImage = (state.currentImage + 1) % product.images.length;
-  }
-
-  // Retrocede a la imagen anterior del producto en el mini carrusel.
-  previousImage(product: ProductCardItem): void {
-    const state = this.getCardState(product);
-    state.currentImage =
-      (state.currentImage - 1 + product.images.length) % product.images.length;
-  }
-
   // Aplica el orden seleccionado por el usuario y recarga el lote visible.
   onSortChange() {
     this.applyLocalSort();
-    this.visibleProducts = [];
-    this.loadMoreProducts();
+    this.refreshVisibleProducts();
+  }
+
+  selectSort(value: string): void {
+    this.selectedSort = value;
+    this.sortMenuOpen = false;
+    this.onSortChange();
+  }
+
+  closeSortMenu(): void {
+    this.sortMenuOpen = false;
+  }
+
+  get selectedSortLabel(): string {
+    return this.sortOptions.find(option => option.value === this.selectedSort)?.label ?? 'Más relevantes';
   }
 
   // Ordena el conjunto filtrado según la estrategia actual del selector.
@@ -447,36 +258,48 @@ export class Home {
   }
 
   // Evalúa si un producto coincide con los filtros activos, incluyendo ofertas, novedades y géneros.
-  matchesFilter(product: ProductCardItem, filters: string[]): boolean {
-    if (filters.length === 0) {
-      return true;
-    }
-
-    // ✅ CORRECCIÓN: Si el filtro de ofertas está activo, el producto DEBE tener una oferta.
-    const isOfferFilterActive = filters.includes('OFERTAS');
-    if (isOfferFilterActive && !this.hasDiscount(product)) {
-        return false;
-    }
-
-    const isNewFilterActive = filters.includes('NOVEDADES');
-    if (isNewFilterActive && !product.isNew) {
+  matchesFilter(product: ProductCardItem, filters: CatalogFilterState): boolean {
+    if (product.stock <= 0) {
       return false;
     }
 
-    const genreFilters = filters.filter(filter => this.genreOptions.includes(filter));
-    if (genreFilters.length > 0 && !genreFilters.some(genre =>
+
+    const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const terms = normalize(filters.searchQuery ?? '').trim().split(/\s+/).filter(Boolean);
+    const searchableText = normalize(`${product.details.artist} ${product.name}`);
+    if (!terms.every(term => searchableText.includes(term))) {
+      return false;
+    }
+
+    if (filters.collection === 'new' && !this.isProductNew(product)) {
+      return false;
+    }
+    if (filters.collection === 'offers' && !this.hasDiscount(product)) {
+      return false;
+    }
+
+    const hasAnyFilter =
+      (filters.bands.enabled && filters.bands.values.length > 0) ||
+      (filters.genres.enabled && filters.genres.values.length > 0) ||
+      (filters.formats.enabled && filters.formats.values.length > 0);
+
+    if (!hasAnyFilter) {
+      return true;
+    }
+
+    if (filters.bands.enabled && filters.bands.values.length > 0 && !filters.bands.values.some(band =>
+      product.details?.artist?.toLowerCase() === band.toLowerCase()
+    )) {
+      return false;
+    }
+
+    if (filters.genres.enabled && filters.genres.values.length > 0 && !filters.genres.values.some(genre =>
       product.details?.genre?.toLowerCase() === genre.toLowerCase()
     )) {
       return false;
     }
 
-    // Si solo está activo el filtro de ofertas, no hay más lógica que aplicar.
-    if ((isOfferFilterActive || isNewFilterActive) && filters.length === 1) {
-        return true;
-    }
-
-    const formatFilters = filters.filter(filter => filter === 'Vinilo' || filter === 'CD');
-    if (formatFilters.length > 0 && !formatFilters.some(filter =>
+    if (filters.formats.enabled && filters.formats.values.length > 0 && !filters.formats.values.some(filter =>
       product.details.format === (filter === 'Vinilo' ? 'vinyl' : 'cd')
     )) {
       return false;
@@ -485,51 +308,137 @@ export class Home {
     return true;
   }
 
-  // Devuelve si un género concreto está seleccionado en el filtro activo.
+  // Verifica si una banda concreta ya está seleccionada.
+  isBandSelected(band: string): boolean {
+    return this.selectedFilters.bands.values.includes(band);
+  }
+
+  // Verifica si un género concreto ya está seleccionado.
   isGenreSelected(genre: string): boolean {
-    return this.selectedFilters.includes(genre);
+    return this.selectedFilters.genres.values.includes(genre);
   }
 
-  // Calcula cuántos géneros activos hay en la selección actual.
+  // Verifica si un formato concreto ya está seleccionado.
+  isFormatSelected(format: string): boolean {
+    return this.selectedFilters.formats.values.includes(format);
+  }
+
+  // Devuelve la cantidad de bandas activas en el filtro actual.
+  get selectedBandCount(): number {
+    return this.selectedFilters.bands.values.length;
+  }
+
+  get availableBandOptions(): string[] {
+    return this.bandOptions.filter(band => this.getBandProductCount(band) > 0);
+  }
+
+  get filteredBandOptions(): string[] {
+    return this.searchOptions(this.availableBandOptions, this.bandSearchTerm);
+  }
+
+  get visibleBandOptions(): string[] {
+    const bands = this.filteredBandOptions;
+    return this.showAllBands || this.bandSearchTerm.trim() ? bands : bands.slice(0, this.initialBandLimit);
+  }
+
+  getBandProductCount(band: string): number {
+    return this.allProducts.filter(product => product.stock > 0 &&
+      product.details.artist.toLowerCase() === band.toLowerCase()).length;
+  }
+
+  private searchOptions(options: string[], term: string): string[] {
+    const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const query = normalize(term.trim());
+    return options.filter(option => normalize(option).includes(query));
+  }
+
+  get availableGenreOptions(): string[] {
+    return [...new Set(this.allProducts.filter(product => product.stock > 0)
+      .map(product => product.details.genre).filter(genre => genre.trim().length > 0))]
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  get filteredGenreOptions(): string[] {
+    return this.searchOptions(this.availableGenreOptions, this.genreSearchTerm);
+  }
+
+  get visibleGenreOptions(): string[] {
+    const genres = this.filteredGenreOptions;
+    return this.showAllGenres || this.genreSearchTerm.trim() ? genres : genres.slice(0, this.initialGenreLimit);
+  }
+
+  getGenreProductCount(genre: string): number {
+    return this.allProducts.filter(product => product.stock > 0 &&
+      product.details.genre.toLowerCase() === genre.toLowerCase()).length;
+  }
+
+  // Devuelve la cantidad de géneros activos en la selección actual.
   get selectedGenreCount(): number {
-    return this.selectedFilters.filter(filter => this.genreOptions.includes(filter)).length;
+    return this.selectedFilters.genres.values.length;
   }
 
-  // Indica si existe al menos un género en el filtro activo.
+  // Devuelve la cantidad de formatos activos en la selección actual.
+  get selectedFormatCount(): number {
+    return this.selectedFilters.formats.values.length;
+  }
+
+  // Indica si hay bandas seleccionadas para permitir limpiar el filtro.
+  get hasSelectedBands(): boolean {
+    return this.selectedBandCount > 0;
+  }
+
+  // Indica si hay géneros seleccionados para permitir limpiar el filtro.
   get hasSelectedGenres(): boolean {
     return this.selectedGenreCount > 0;
   }
 
-  // Agrega o quita un género del conjunto actual de filtros y notifica al servicio global.
+  // Indica si hay formatos seleccionados para permitir limpiar el filtro.
+  get hasSelectedFormats(): boolean {
+    return this.selectedFormatCount > 0;
+  }
+
+  // Persiste la selección de una banda en el servicio global de filtros.
+  toggleBandFilter(band: string, selected: boolean): void {
+    this.filterService.toggleBand(band, selected);
+  }
+
+  // Persiste la selección de un género en el servicio global de filtros.
   toggleGenreFilter(genre: string, selected: boolean): void {
-    const filters = selected
-      ? [...new Set([...this.selectedFilters, genre])]
-      : this.selectedFilters.filter(filter => filter !== genre);
-
-    this.filterService.setFilters(filters);
+    this.filterService.toggleGenre(genre, selected);
   }
 
-  // Elimina todos los filtros de género manteniendo el resto de filtros del catálogo.
+  // Persiste la selección de un formato en el servicio global de filtros.
+  toggleFormatFilter(format: string, selected: boolean): void {
+    this.filterService.toggleFormat(format, selected);
+  }
+
+  // Limpia todas las bandas seleccionadas.
+  clearBandFilters(): void {
+    this.filterService.clearBands();
+  }
+
+  // Limpia todos los géneros seleccionados.
   clearGenreFilters(): void {
-    this.filterService.setFilters(
-      this.selectedFilters.filter(filter => !this.genreOptions.includes(filter))
-    );
+    this.filterService.clearGenres();
   }
 
-  // Cierra el popover del filtro cuando el usuario hace clic fuera de él.
+  // Limpia todos los formatos seleccionados.
+  clearFormatFilters(): void {
+    this.filterService.clearFormats();
+  }
+
+  // Cierra los popovers de filtros cuando el usuario hace clic fuera de ellos.
   closeGenreFilter(): void {
+    this.showBandFilter = false;
     this.showGenreFilter = false;
+    this.showFormatFilter = false;
   }
 
   // Recalcula la coleccion filtrada y vuelve a aplicar el orden actual.
   applyFilters() {
-    if (this.selectedFilters.length === 0) {
-      this.filteredProducts = [...this.allProducts];
-    } else {
-      this.filteredProducts = this.allProducts.filter(product =>
-        this.matchesFilter(product, this.selectedFilters)
-      );
-    }
+    this.filteredProducts = this.allProducts.filter(product =>
+      this.matchesFilter(product, this.selectedFilters)
+    );
 
     this.applyLocalSort();
   }

@@ -2,7 +2,6 @@ import { Product } from '../domain/product.model';
 
 export interface ProductCardState {
   currentImageIndex: number;
-  selectedQuantity: number;
 }
 
 export interface ProductCardViewModel {

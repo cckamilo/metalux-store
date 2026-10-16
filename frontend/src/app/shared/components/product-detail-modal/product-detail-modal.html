@@ -1,61 +1,177 @@
-<div *ngIf="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-  <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full relative text-gray-900">
-    <button (click)="closeModal()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-800 transition">
+<div *ngIf="show" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-0 sm:p-4"
+  style="font-family: Inter, 'Segoe UI', system-ui, sans-serif">
+  <div class="relative flex max-h-dvh w-full max-w-xl flex-col overflow-hidden bg-white text-[#0b1029] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl">
+    <button type="button" (click)="closeModal()" aria-label="Cerrar detalle"
+      class="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
-    
-    <h2 class="text-2xl font-bold mb-2">{{ product?.name }}</h2>
-    <div *ngIf="product">
-      <p class="mb-1 text-sm text-gray-600">
-        {{ product.details?.artist }} · {{ product.details?.format === 'vinyl' ? 'Vinilo' : 'CD' }}
-      </p>
-      <p class="mb-4">{{ product.description }}</p>
 
-      <div *ngIf="product.details?.type === 'music'" class="mb-4">
-        <h3 class="text-lg font-bold mb-2">Especificaciones:</h3>
-        <ul class="list-disc list-inside space-y-1 text-gray-700">
-          <li *ngIf="product.details?.genre">
-            <span class="font-semibold">Género:</span> {{ product.details.genre }}
-          </li>
-          <li *ngIf="product.details?.releaseYear">
-            <span class="font-semibold">Año:</span> {{ product.details.releaseYear }}
-          </li>
-          <li *ngIf="product.details?.label">
-            <span class="font-semibold">Sello:</span> {{ product.details.label }}
-          </li>
-          <li *ngIf="product.details?.discCount">
-            <span class="font-semibold">Discos:</span> {{ product.details.discCount }}
-          </li>
-        </ul>
+    <div *ngIf="product" tabindex="0" role="region" aria-label="Detalle del producto"
+      class="detail-content min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
+      <div class="relative flex h-[clamp(6rem,calc(100dvh-600px),16rem)] w-full items-center justify-center bg-white p-4">
+        <img [src]="product.images?.[currentImage]" [alt]="product.name + ' — Imagen ' + (currentImage + 1) + ' de ' + product.images?.length" class="h-full w-full object-contain" />
+
+        <ng-container *ngIf="product.images?.length > 1">
+          <button type="button" (click)="previousImage()" aria-label="Imagen anterior"
+            class="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button type="button" (click)="nextImage()" aria-label="Imagen siguiente"
+            class="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </ng-container>
       </div>
 
-      <div class="flex items-center gap-2 mb-2">
-        <span class="font-bold">Precio:</span>
-        <p class="text-lg font-semibold">{{ formatPrice(getProductPrice(product)) }}</p>
-        <p *ngIf="hasDiscount(product)" class="text-sm font-normal text-gray-500 line-through">
-          {{ formatPrice(product.price) }}
+      <div *ngIf="product.images?.length > 1" class="flex flex-wrap items-center justify-center gap-2 px-6 pt-2">
+        <button *ngFor="let image of product.images; let i = index" type="button" (click)="currentImage = i"
+          [attr.aria-label]="'Ver imagen ' + (i + 1) + ' de ' + product.images.length"
+          [attr.aria-pressed]="i === currentImage"
+          class="h-11 w-11 overflow-hidden rounded-lg border-2 bg-white p-0.5 transition-colors hover:border-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          [class.border-black]="i === currentImage" [class.border-transparent]="i !== currentImage">
+          <img [src]="image" alt="" class="h-full w-full object-contain" />
+        </button>
+      </div>
+
+      <div class="px-6 pb-3 sm:px-7">
+      <div class="mt-3 min-w-0">
+        <h2 class="break-words text-[20px] font-bold leading-snug tracking-tight text-[#0b1029]"
+          style="font-family: Georgia, serif">
+          {{ product.name }}
+        </h2>
+        <p class="mt-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-gray-600">
+          {{ product.details?.artist }}
         </p>
-        <span *ngIf="hasDiscount(product)" class="text-sm font-semibold text-red-600">
-          {{ getDiscountLabel(product) }}
-        </span>
       </div>
-      
-      <p *ngIf="product.stock > 0" class="mb-2">
-        <span class="font-bold">Stock disponible:</span> {{ product.stock }}
-      </p>
-      <p *ngIf="product.stock === 0" class="text-red-600 font-bold">
-        ¡Producto agotado!
-      </p>
-      
-      <button (click)="addToCart(product)"
-        [disabled]="product.stock === 0"
-        [class.bg-gray-400]="product.stock === 0"
-        [class.hover:bg-gray-400]="product.stock === 0"
-        [class.cursor-not-allowed]="product.stock === 0"
-        class="mt-4 w-full bg-gray-900 text-white py-2 text-sm font-medium rounded-sm hover:bg-black transition">
-        {{ product.stock === 0 ? 'AGOTADO' : 'AÑADIR AL CARRITO' }}
+
+      <div class="mt-3">
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p class="text-[32px] font-extrabold leading-none tracking-tight text-black max-[420px]:text-[28px]">{{ formatPrice(getProductPrice(product)) }}</p>
+          <p *ngIf="hasDiscount(product)" class="text-sm text-gray-600 line-through">
+            {{ formatPrice(product.price) }}
+          </p>
+          <span *ngIf="hasDiscount(product)" class="rounded-full bg-red-100 px-2 py-0.5 text-[12px] font-bold text-red-700">
+            {{ getDiscountLabel(product) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <ng-container *ngIf="product.details?.type === 'music' && product.details?.format === 'vinyl'">
+          <div *ngIf="vinylVersions.length > 1; else singleVinylColor">
+            <p class="text-[13px] font-semibold text-black">Versión</p>
+            <div class="mt-1 flex flex-wrap items-center gap-1" role="group" aria-label="Versiones del vinilo">
+              <button *ngFor="let color of vinylVersions" type="button"
+                (click)="currentImage = color.imageIndex"
+                [attr.aria-label]="'Ver versión ' + color.name"
+                [attr.aria-pressed]="currentImage === color.imageIndex"
+                [title]="color.name"
+                class="flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                <span aria-hidden="true"
+                  class="block h-8 w-8 rounded-full border border-gray-300 ring-offset-2"
+                  [class.ring-2]="currentImage === color.imageIndex"
+                  [class.ring-black]="currentImage === color.imageIndex"
+                  [style.background-color]="color.hex"
+                  [style.background-image]="color.secondaryHex ? 'repeating-conic-gradient(' + color.hex + ' 0deg 22deg, ' + color.secondaryHex + ' 22deg 26deg)' : null"></span>
+              </button>
+            </div>
+            <p class="text-[13px] text-gray-600">{{ currentVinylVersion?.name }}</p>
+          </div>
+          <ng-template #singleVinylColor>
+            <p *ngIf="(vinylVersions[0] || product.details?.vinylColor) as color"
+              class="text-[13px] text-gray-600">
+              Versión: <span class="font-semibold text-gray-900">{{ color.name }}</span>
+              <span *ngIf="product.details?.discCount"> · {{ product.details.discCount }} {{ product.details.discCount === 1 ? 'disco' : 'discos' }}</span>
+            </p>
+          </ng-template>
+        </ng-container>
+        <p *ngIf="product.stock > 0 && product.stock <= lowStockThreshold" role="status" class="mt-2 text-[12px] text-amber-700">
+          {{ product.stock === 1 ? 'Queda 1 unidad' : 'Quedan ' + product.stock + ' unidades' }}
+        </p>
+      </div>
+
+      <div class="mt-2">
+        <div class="flex gap-4 border-b border-gray-200" role="tablist" aria-label="Información del producto">
+          <button type="button" role="tab" [attr.aria-selected]="activeProductTab === 'description'"
+            (click)="activeProductTab = 'description'"
+            [class]="activeProductTab === 'description' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'"
+            class="-mb-px flex min-h-11 items-center justify-center gap-1.5 border-b-2 py-3 text-[13px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+            </svg>
+            Descripción
+          </button>
+          <button *ngIf="product.details?.type === 'music'" type="button" role="tab"
+            [attr.aria-selected]="activeProductTab === 'specifications'"
+            (click)="activeProductTab = 'specifications'"
+            [class]="activeProductTab === 'specifications' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'"
+            class="-mb-px flex min-h-11 items-center justify-center gap-1.5 border-b-2 py-3 text-[13px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            Especificaciones
+          </button>
+        </div>
+
+        <div *ngIf="activeProductTab === 'description'" class="relative mt-3">
+          <div #scrollPanel role="tabpanel" tabindex="0" aria-label="Descripción"
+            (scroll)="updatePanelFade(scrollPanel)"
+            class="detail-content h-36 overflow-y-auto overscroll-contain pr-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
+            <p class="text-sm leading-[1.6] text-[#27335b]">{{ product.description }}</p>
+          </div>
+          <div *ngIf="panelHasMore()" aria-hidden="true"
+            class="pointer-events-none absolute right-3 bottom-0 left-0 h-12 bg-linear-to-b from-transparent to-white"></div>
+        </div>
+
+        <div *ngIf="activeProductTab === 'specifications' && product.details?.type === 'music'" class="relative mt-3">
+        <div #scrollPanel role="tabpanel" (scroll)="updatePanelFade(scrollPanel)"
+          tabindex="0" aria-label="Especificaciones"
+          class="detail-content h-36 overflow-y-auto overscroll-contain pr-3 text-[13px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
+          <dl class="divide-y divide-gray-200 border-b border-gray-200">
+            <div *ngIf="product.details?.genre" class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
+              <dt class="text-gray-500">Género</dt>
+              <dd class="break-words text-right font-semibold text-gray-900">{{ product.details.genre }}</dd>
+            </div>
+            <div *ngIf="product.details?.format" class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
+              <dt class="text-gray-500">Formato</dt>
+              <dd class="break-words text-right font-semibold text-gray-900">{{ product.details.format === 'vinyl' ? ('Vinilo' + (product.details.discCount ? ' ' + product.details.discCount + 'LP' : '')) : 'CD' }}</dd>
+            </div>
+            <div *ngIf="product.details?.format === 'vinyl' && (currentVinylVersion || product.details?.vinylColor) as color"
+              class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
+              <dt class="text-gray-500">Color del vinilo</dt>
+              <dd class="break-words text-right font-semibold text-gray-900">{{ color.name }}</dd>
+            </div>
+            <div *ngIf="product.details?.discCount" class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
+              <dt class="text-gray-500">Discos</dt>
+              <dd class="text-right font-semibold text-gray-900">{{ product.details.discCount }}</dd>
+            </div>
+            <div *ngIf="product.details?.releaseYear" class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
+              <dt class="text-gray-500">Año de edición</dt>
+              <dd class="text-right font-semibold text-gray-900">{{ product.details.releaseYear }}</dd>
+            </div>
+            <div *ngIf="product.details?.label" class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
+              <dt class="text-gray-500">Sello</dt>
+              <dd class="break-words text-right font-semibold text-gray-900">{{ product.details.label }}</dd>
+            </div>
+          </dl>
+        </div>
+        <div *ngIf="panelHasMore()" aria-hidden="true"
+          class="pointer-events-none absolute right-3 bottom-0 left-0 h-12 bg-linear-to-b from-transparent to-white"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+    <div *ngIf="product" class="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-7">
+      <button type="button" (click)="addToCart(product)"
+        class="flex min-h-12 w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-lg bg-black px-4 py-3.5 text-[15px] font-bold text-white shadow-sm transition hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:bg-gray-900">
+        <span>Agregar al carrito</span>
+        <span class="text-[13px] font-normal text-gray-200">{{ formatPrice(getProductPrice(product)) }}</span>
       </button>
     </div>
   </div>

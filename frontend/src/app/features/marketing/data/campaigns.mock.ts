@@ -11,8 +11,8 @@ export const campaigns: Campaign[] = [
       {
         id: 1,
         eyebrow: 'Metal extremo',
-        title: 'Nuevos sonidos para tu coleccion',
-        description: 'Explora ediciones seleccionadas en vinilo y CD.',
+        title: 'Nuevos sonidos para tu colección',
+        description: 'Ediciones seleccionadas en vinilo de colores y CD.',
         imageUrl: 'https://f4.bcbits.com/img/0042534543_10.jpg',
         order: 1,
         cta: {

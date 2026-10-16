@@ -1,88 +1,54 @@
-<div *ngIf="isActive" class="w-full overflow-hidden rounded bg-white flex flex-col">
-  <div class="relative mx-auto aspect-square w-full max-w-[260px] overflow-hidden sm:max-w-[280px] lg:max-w-[320px]">
-    <img [src]="product.images[currentImage]" [alt]="product.name"
-      class="h-full w-full object-cover transition-all duration-[1200ms] ease-in-out" />
-
-    <div *ngIf="isProductNew"
-      class="absolute left-2 top-2 z-20 rounded-sm bg-green-500 px-3 py-1 text-xs font-bold text-white shadow">
+<div *ngIf="isActive" class="flex h-full min-w-0 flex-col bg-white"
+  style="font-family: Inter, 'Segoe UI', system-ui, sans-serif">
+  <div class="relative aspect-square w-full overflow-hidden rounded bg-gray-50">
+    <button type="button" (click)="onOpenDetails()" [attr.aria-label]="'Ver detalles de ' + product.name"
+      class="block h-full w-full cursor-pointer p-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-black">
+      <img [src]="product.images[0]" [alt]="product.name"
+        class="h-full w-full object-contain transition-transform duration-300 hover:scale-105" />
+    </button>
+    <span *ngIf="isProductNew"
+      class="absolute left-2 top-2 rounded-sm bg-green-600 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
       NUEVO
-    </div>
-
-    <div *ngIf="product.stock === 0"
-      class="absolute right-2 top-2 z-20 rounded-sm bg-gray-900 px-3 py-1 text-xs font-bold text-white shadow">
-      AGOTADO
-    </div>
-
-    <button type="button" (click)="onPreviousImage()"
-      class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 p-1 text-gray-700 shadow transition hover:bg-white hover:text-black">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-    </button>
-
-    <button type="button" (click)="onNextImage()"
-      class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 p-1 text-gray-700 shadow transition hover:bg-white hover:text-black">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-    </button>
-
-    <div *ngIf="hasDiscount"
-      class="absolute bottom-2 right-2 rounded bg-red-500 px-3 py-1 text-xs font-bold text-white shadow">
+    </span>
+    <span *ngIf="hasDiscount"
+      class="absolute right-2 top-2 rounded-sm bg-red-600 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
       {{ discountLabel || 'OFERTA' }}
-    </div>
-
-    <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2">
-      <div *ngFor="let image of product.images; let i = index" (click)="onSelectImage(i)"
-        class="h-2 w-2 cursor-pointer rounded-full transition-colors duration-300 hover:bg-black"
-        [class.bg-black]="i === currentImage" [class.bg-gray-200]="i !== currentImage">
-      </div>
-    </div>
+    </span>
   </div>
 
-  <div class="mx-auto flex w-full max-w-[260px] flex-1 flex-col justify-between px-1 pb-2 pt-2 sm:max-w-[280px] lg:max-w-[320px]">
-    <div>
-      <h3 class="line-clamp-2 min-h-10 text-sm font-medium leading-tight text-gray-700">
-        {{ product.name }}
-      </h3>
-      <p class="mt-1 truncate text-xs text-gray-500">
-        {{ product.details.artist }} · {{ product.details.format === 'vinyl' ? 'Vinilo' : 'CD' }}
+  <div class="flex min-w-0 flex-1 flex-col pt-3">
+    <h3 class="min-h-5 text-[13px] leading-5 text-gray-900 sm:text-sm">
+      <span class="font-bold">{{ product.details.artist }}</span>
+      <em class="ml-1 break-words" style="font-family: Georgia, serif">&quot;{{ product.name }}&quot;</em>
+    </h3>
+    <p class="mt-1 text-xs text-gray-500">{{ product.details.format === 'vinyl' ? 'Vinilo' : 'CD' }}</p>
+    <div class="mt-1 min-h-4 text-xs text-gray-600">
+      <ng-container *ngIf="product.details.format === 'vinyl'">
+        <span *ngIf="(product.details.vinylColors?.length || 0) > 1; else singleColor">
+          {{ product.details.vinylColors?.length }} versiones
+        </span>
+        <ng-template #singleColor>
+          <span *ngIf="(product.details.vinylColors?.[0] || product.details.vinylColor) as color"
+            class="flex items-center gap-1.5">
+            <span aria-hidden="true" class="h-3 w-3 shrink-0 rounded-full border border-gray-400"
+              [style.background-color]="color.hex"></span>
+            {{ color.name }}
+          </span>
+        </ng-template>
+      </ng-container>
+    </div>
+    <div class="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <p class="text-xl font-bold tracking-tight text-gray-900">{{ formatPrice(finalPrice) }}</p>
+      <p *ngIf="hasDiscount" class="text-[13px] text-gray-500 line-through">{{ formatPrice(product.price) }}</p>
+    </div>
+    <div class="mt-1 mb-3 min-h-4">
+      <p *ngIf="product.stock > 0 && product.stock <= lowStockThreshold" class="text-xs font-semibold text-amber-700">
+        {{ product.stock === 1 ? 'Queda 1 unidad' : 'Quedan ' + product.stock + ' unidades' }}
       </p>
     </div>
-
-    <div class="mt-1 flex min-h-6 items-center gap-2">
-      <div class="flex items-center gap-2">
-        <p class="text-sm font-bold text-gray-900">
-          {{ finalPrice | currency:'COP':'symbol-narrow':'1.0-0' }}
-        </p>
-        <p *ngIf="hasDiscount" class="text-sm font-normal text-gray-400 line-through">
-          {{ product.price | currency:'COP':'symbol-narrow':'1.0-0' }}
-        </p>
-      </div>
-
-      <button type="button" (click)="onOpenDetails()" class="ml-auto text-gray-500 transition hover:text-black">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <span class="sr-only">Ver detalles</span>
-      </button>
-    </div>
-
-    <div class="mt-2 flex items-center gap-2">
-      <select [value]="selectedQuantity" (change)="onQuantityChange(+($any($event.target).value))"
-        class="w-1/3 rounded-sm border border-gray-300 bg-gray-100 px-2 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-black">
-        <option *ngFor="let q of [1,2,3,4,5,6,7,8,9,10]" [value]="q">{{ q }}</option>
-      </select>
-
-      <button type="button" (click)="onAddToCart()" [disabled]="product.stock === 0"
-        [class.bg-gray-400]="product.stock === 0" [class.hover:bg-gray-400]="product.stock === 0"
-        [class.cursor-not-allowed]="product.stock === 0"
-        class="w-2/3 rounded-sm bg-gray-900 py-2 text-sm font-medium text-white transition hover:bg-black">
-        <span *ngIf="product.stock > 0">AÑADIR</span>
-        <span *ngIf="product.stock === 0">AGOTADO</span>
-      </button>
-    </div>
+    <button type="button" (click)="onAddToCart()"
+      class="mt-auto min-h-11 w-full rounded-sm border border-gray-900 bg-white px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-gray-900 transition hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:text-xs">
+      Agregar al carrito
+    </button>
   </div>
 </div>
