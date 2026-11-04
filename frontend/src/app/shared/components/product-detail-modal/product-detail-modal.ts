@@ -15,7 +15,7 @@ import { catalogConfig } from '../../../features/catalog/config/catalog.config';
 export class ProductDetailModal implements OnChanges, OnDestroy {
 
   private pricingService = inject(PricingService);
-  activeProductTab: 'description' | 'specifications' = 'description';
+  activeProductTab: 'description' | 'specifications' = 'specifications';
   currentImage = 0;
   readonly panelHasMore = signal(false);
   private panelObserver?: ResizeObserver;
@@ -54,6 +54,7 @@ export class ProductDetailModal implements OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['product']) {
       this.currentImage = 0;
+      this.activeProductTab = this.product?.details?.type === 'music' ? 'specifications' : 'description';
     }
   }
 
@@ -74,7 +75,7 @@ export class ProductDetailModal implements OnChanges, OnDestroy {
  @Output() addToCartEvent = new EventEmitter<any>();
   closeModal() {
     this.show = false;
-    this.activeProductTab = 'description';
+    this.activeProductTab = this.product?.details?.type === 'music' ? 'specifications' : 'description';
     this.currentImage = 0;
     this.close.emit();
   }

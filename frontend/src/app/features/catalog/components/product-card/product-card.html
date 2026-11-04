@@ -1,28 +1,35 @@
-<div *ngIf="isActive" class="flex h-full min-w-0 flex-col bg-white"
+<div *ngIf="isActive" class="group flex h-full min-w-0 flex-col bg-white"
+  [ngClass]="{ 'opacity-[0.55]': product.stock <= 0 }"
   style="font-family: Inter, 'Segoe UI', system-ui, sans-serif">
-  <div class="relative aspect-square w-full overflow-hidden rounded bg-gray-50">
+  <div class="relative aspect-square w-full overflow-hidden rounded-[8px] border border-[#f0f0f0] bg-white transition-shadow duration-200 group-hover:shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
     <button type="button" (click)="onOpenDetails()" [attr.aria-label]="'Ver detalles de ' + product.name"
-      class="block h-full w-full cursor-pointer p-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-black">
+      class="absolute inset-0 flex h-full w-full cursor-pointer items-center justify-center focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-black">
       <img [src]="product.images[0]" [alt]="product.name"
-        class="h-full w-full object-contain transition-transform duration-300 hover:scale-105" />
+        [style.width.%]="product.details.format === 'vinyl' ? 85 : 60"
+        [style.height.%]="product.details.format === 'vinyl' ? 85 : 60"
+        class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105" />
     </button>
-    <span *ngIf="isProductNew"
-      class="absolute left-2 top-2 rounded-sm bg-green-600 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
+    <span *ngIf="product.stock <= 0"
+      class="pointer-events-none absolute left-2 top-2 rounded-sm bg-black px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
+      AGOTADO
+    </span>
+    <span *ngIf="isProductNew && product.stock > 0"
+      class="pointer-events-none absolute left-2 top-2 rounded-sm bg-green-600 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
       NUEVO
     </span>
     <span *ngIf="hasDiscount"
-      class="absolute right-2 top-2 rounded-sm bg-red-600 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
+      class="pointer-events-none absolute right-2 top-2 rounded-sm bg-red-600 px-2 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-white">
       {{ discountLabel || 'OFERTA' }}
     </span>
   </div>
 
   <div class="flex min-w-0 flex-1 flex-col pt-3">
-    <h3 class="min-h-5 text-[13px] leading-5 text-gray-900 sm:text-sm">
+    <h3 class="line-clamp-2 min-h-[37.8px] text-[14px] leading-[1.35] text-gray-900">
       <span class="font-bold">{{ product.details.artist }}</span>
       <em class="ml-1 break-words" style="font-family: Georgia, serif">&quot;{{ product.name }}&quot;</em>
     </h3>
-    <p class="mt-1 text-xs text-gray-500">{{ product.details.format === 'vinyl' ? 'Vinilo' : 'CD' }}</p>
-    <div class="mt-1 min-h-4 text-xs text-gray-600">
+    <div class="mt-1 flex min-h-4 flex-wrap items-center gap-x-1.5 text-[12px] text-gray-500">
+      <span>{{ product.details.format === 'vinyl' ? 'Vinilo' : 'CD' }}</span>
       <ng-container *ngIf="product.details.format === 'vinyl'">
         <span *ngIf="(product.details.vinylColors?.length || 0) > 1; else singleColor">
           {{ product.details.vinylColors?.length }} versiones
@@ -30,7 +37,7 @@
         <ng-template #singleColor>
           <span *ngIf="(product.details.vinylColors?.[0] || product.details.vinylColor) as color"
             class="flex items-center gap-1.5">
-            <span aria-hidden="true" class="h-3 w-3 shrink-0 rounded-full border border-gray-400"
+            <span aria-hidden="true" class="h-[10px] w-[10px] shrink-0 rounded-full border border-gray-400"
               [style.background-color]="color.hex"></span>
             {{ color.name }}
           </span>
@@ -38,17 +45,18 @@
       </ng-container>
     </div>
     <div class="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <p class="text-xl font-bold tracking-tight text-gray-900">{{ formatPrice(finalPrice) }}</p>
-      <p *ngIf="hasDiscount" class="text-[13px] text-gray-500 line-through">{{ formatPrice(product.price) }}</p>
+      <p class="text-[18px] font-extrabold tracking-tight text-gray-900">{{ formatPrice(finalPrice) }}</p>
+      <p *ngIf="hasDiscount" class="text-[12px] text-gray-500 line-through">{{ formatPrice(product.price) }}</p>
     </div>
     <div class="mt-1 mb-3 min-h-4">
-      <p *ngIf="product.stock > 0 && product.stock <= lowStockThreshold" class="text-xs font-semibold text-amber-700">
+      <p *ngIf="product.stock > 0 && product.stock <= lowStockThreshold" class="text-[12px] font-semibold text-[#b45309]">
         {{ product.stock === 1 ? 'Queda 1 unidad' : 'Quedan ' + product.stock + ' unidades' }}
       </p>
     </div>
-    <button type="button" (click)="onAddToCart()"
-      class="mt-auto min-h-11 w-full rounded-sm border border-gray-900 bg-white px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-gray-900 transition hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:text-xs">
-      Agregar al carrito
+    <button type="button" (click)="onAddToCart()" [disabled]="product.stock <= 0"
+      [attr.aria-label]="'Agregar al carrito: ' + product.name"
+      class="mt-auto min-h-11 w-full rounded-sm border border-[#c7c9cf] bg-white px-2 py-2 text-[12px] font-bold uppercase tracking-[0.06em] text-gray-900 transition enabled:hover:bg-black enabled:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500">
+      Agregar
     </button>
   </div>
 </div>

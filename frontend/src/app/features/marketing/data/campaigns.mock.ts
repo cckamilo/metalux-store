@@ -26,6 +26,7 @@ export const campaigns: Campaign[] = [
   {
     id: 2,
     name: 'Lanzamientos Gojira',
+    theme: 'blue',
     type: 'release',
     isActive: true,
     order: 2,

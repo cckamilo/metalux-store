@@ -1,0 +1,56 @@
+<button #filtersToggle type="button" (click)="showMobileFilters = !showMobileFilters"
+  [attr.aria-expanded]="showMobileFilters" aria-controls="catalog-filters"
+  class="mb-4 flex min-h-11 w-full items-center justify-between rounded border border-gray-300 px-4 text-sm font-semibold lg:hidden">
+  <span>{{ showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros' }} <span *ngIf="activeCount">({{ activeCount }})</span></span>
+  <span aria-hidden="true">{{ showMobileFilters ? '−' : '+' }}</span>
+</button>
+<aside id="catalog-filters" aria-label="Filtros del catálogo" [ngClass]="showMobileFilters ? 'block' : 'hidden'"
+  class="mb-6 rounded border border-gray-200 p-4 lg:mb-0 lg:block lg:rounded-none lg:border-0 lg:p-0">
+  <div class="flex w-full flex-col border-t border-gray-200">
+    <ng-container *ngFor="let group of groups">
+      <div *ngIf="filters[group.key].enabled" class="relative flex flex-col border-b border-gray-200 py-4">
+        <button type="button" (click)="expanded[group.key] = !expanded[group.key]"
+          [attr.aria-expanded]="expanded[group.key]" [attr.aria-controls]="group.id + '-filter-options'"
+          class="flex min-h-6 w-full items-center justify-between bg-transparent px-0 text-left text-[12px] font-bold uppercase tracking-[0.14em] text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+          <span>{{ group.title }}</span>
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="ml-4 h-4 w-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none"
+            [class.rotate-180]="expanded[group.key]"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        <div *ngIf="expanded[group.key]" [id]="group.id + '-filter-options'" class="w-full pt-3">
+          <div *ngIf="filters[group.key].values.length" class="mb-2 flex justify-end border-b border-gray-200 pb-2">
+            <button type="button" (click)="clearGroup.emit(group.key)"
+              class="text-xs text-gray-500 underline hover:text-black">Limpiar</button>
+          </div>
+          <div *ngIf="group.search" class="mb-2">
+            <input type="search" [(ngModel)]="searchTerms[group.key]" [placeholder]="group.search" [attr.aria-label]="group.search"
+              class="h-10 w-full rounded border border-gray-300 bg-white px-3 text-[13px] text-gray-700 outline-none focus:border-black" />
+          </div>
+          <div [id]="group.id + '-options-list'">
+            <label *ngFor="let option of visibleOptions(group.key)"
+              class="flex cursor-pointer items-center gap-2 text-[13px] text-gray-700"
+              [ngClass]="group.key === 'formats' ? 'py-2' : 'min-h-8 py-1'">
+              <input #checkbox type="checkbox" [checked]="filters[group.key].values.includes(option)"
+                (change)="select(group.key, option, checkbox.checked)" class="h-[15px] w-[15px] shrink-0 accent-black" />
+              <span class="min-w-0 flex-1">{{ option }}</span>
+              <ng-container *ngIf="group.key !== 'formats'">
+                <span class="shrink-0 text-[12px] tabular-nums text-gray-500" aria-hidden="true">{{ count(group.key, option) }}</span>
+                <span class="sr-only">({{ count(group.key, option) }} {{ count(group.key, option) === 1 ? 'disco' : 'discos' }})</span>
+              </ng-container>
+            </label>
+          </div>
+          <div *ngIf="group.search && filteredOptions(group.key).length === 0" role="status" class="pt-2 text-xs text-gray-500">{{ group.empty }}</div>
+          <button *ngIf="group.search && !searchTerms[group.key].trim() && options(group.key).length > initialLimit"
+            type="button" (click)="showAll[group.key] = !showAll[group.key]" [attr.aria-expanded]="showAll[group.key]"
+            [attr.aria-controls]="group.id + '-options-list'"
+            class="min-h-9 text-left text-xs font-semibold text-gray-700 underline underline-offset-2 hover:text-black">{{ expandLabel(group.key) }}</button>
+        </div>
+      </div>
+    </ng-container>
+    <button *ngIf="showMobileFilters" type="button" (click)="showMobileFilters = false; filtersToggle.focus()"
+      class="min-h-11 rounded bg-black px-4 py-3 text-sm font-semibold text-white lg:hidden">
+      Ver {{ resultCount }} {{ resultCount === 1 ? 'producto' : 'productos' }}
+    </button>
+  </div>
+</aside>

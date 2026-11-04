@@ -12,7 +12,14 @@ export class CampaignService {
     return this.getActiveCampaigns(now)
       .filter(campaign => campaign.slides.length > 0)
       .sort((first, second) => first.order - second.order)
-      .flatMap(campaign => campaign.slides.sort((first, second) => first.order - second.order));
+      .flatMap(campaign => campaign.slides
+        .sort((first, second) => first.order - second.order)
+        .map(slide => ({
+          ...slide,
+          theme: campaign.theme,
+          startsAt: campaign.startsAt,
+          endsAt: campaign.endsAt
+        })));
   }
 
   getActiveCampaigns(now = Date.now()): Campaign[] {

@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MusicDetails, Product } from '../../domain/product.model';
+import { MusicProduct } from '../../domain/product.model';
 import { catalogConfig } from '../../config/catalog.config';
 
-export type ProductCardItem = Omit<Product, 'details'> & {
-  details: MusicDetails;
-};
+export type ProductCardItem = MusicProduct;
 
 @Component({
   standalone: true,
@@ -31,7 +29,9 @@ export class ProductCardComponent {
   @Output() openDetails = new EventEmitter<void>();
 
   onAddToCart(): void {
-    this.addToCart.emit(1);
+    if (this.product.stock > 0) {
+      this.addToCart.emit(1);
+    }
   }
 
   onOpenDetails(): void {

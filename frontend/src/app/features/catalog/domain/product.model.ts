@@ -60,3 +60,7 @@ export interface Product {
   isActive: boolean;
   isNew: boolean;
 }
+
+export type MusicProduct = Omit<Product, 'details'> & {
+  details: MusicDetails;
+};

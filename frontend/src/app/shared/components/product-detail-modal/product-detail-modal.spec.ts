@@ -63,27 +63,60 @@ describe('ProductDetailModal', () => {
       expect(component.currentImage).toBe(1);
     });
 
-    it('switches the underlined tab and its content', () => {
-      const tabs = element.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-      tabs[1].click();
+    it('orders the artist before the album and keeps purchasing before the information tabs', () => {
+      const layout = element.querySelector('.detail-layout')!;
+      const information = layout.querySelector('.detail-information')!;
+      const heading = information.querySelector('h2')!;
+      const purchase = information.querySelector('.detail-purchase')!;
+      const tabs = information.querySelector('.detail-tabs')!;
+
+      expect(heading.previousElementSibling?.textContent?.trim()).toBe('Test artist');
+      expect(layout.querySelector('.detail-gallery')?.nextElementSibling?.classList.contains('detail-summary')).toBeTrue();
+      expect(purchase.nextElementSibling).toBe(tabs);
+      expect(heading.style.fontFamily).toBe('Georgia, serif');
+    });
+
+    it('preserves closing and resets the gallery and tab', () => {
+      spyOn(component.close, 'emit');
+      component.currentImage = 1;
+      component.activeProductTab = 'specifications';
       fixture.detectChanges();
 
-      expect(tabs[1].getAttribute('aria-selected')).toBe('true');
-      expect(tabs[1].classList.contains('border-black')).toBeTrue();
-      expect(tabs[0].classList.contains('border-transparent')).toBeTrue();
+      element.querySelector<HTMLButtonElement>('[aria-label="Cerrar detalle"]')!.click();
+
+      expect(component.show).toBeFalse();
+      expect(component.currentImage).toBe(0);
+      expect(component.activeProductTab).toBe('specifications');
+      expect(component.close.emit).toHaveBeenCalled();
+    });
+
+    it('switches the underlined tab and its content', () => {
+      const tabs = element.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      expect(tabs[0].textContent).toContain('Especificaciones');
+      expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+      tabs[0].click();
+      fixture.detectChanges();
+
+      expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+      expect(tabs[0].classList.contains('border-black')).toBeTrue();
+      expect(tabs[1].classList.contains('border-transparent')).toBeTrue();
       expect(element.querySelector('[role="tabpanel"]')?.textContent).toContain('Metal');
 
-      tabs[0].click();
+      tabs[1].click();
       fixture.detectChanges();
       expect(element.querySelector('[role="tabpanel"]')?.textContent).toContain(product.description);
     });
 
-    it('keeps the purchase footer outside the scrolling content and emits the product', () => {
-      const scrollContent = element.querySelector('.overflow-y-auto .overflow-y-auto')!;
+    it('allows scrolling only in the text panel and keeps purchase before the tabs', () => {
+      const content = element.querySelector('[role="region"]')!;
+      const scrollContent = element.querySelector('[role="tabpanel"]')!;
       const purchaseButton = element.querySelector<HTMLButtonElement>('button.bg-black')!;
       spyOn(component.addToCartEvent, 'emit');
 
-      expect(scrollContent.contains(purchaseButton)).toBeFalse();
+      expect(element.querySelectorAll('.overflow-y-auto').length).toBe(1);
+      expect(scrollContent.classList.contains('overflow-y-auto')).toBeTrue();
+      expect(purchaseButton.parentElement?.classList.contains('detail-purchase')).toBeTrue();
+      expect(purchaseButton.parentElement?.nextElementSibling?.classList.contains('detail-tabs')).toBeTrue();
       expect(purchaseButton.textContent).toContain(component.formatPrice(component.getProductPrice(product)));
       purchaseButton.click();
       expect(component.addToCartEvent.emit).toHaveBeenCalledWith(product);

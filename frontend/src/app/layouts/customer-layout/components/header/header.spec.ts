@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Header } from './header';
 import { provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
-import { Cart, CartItem } from '../../../../features/cart/services/cart';
+import { Cart } from '../../../../features/cart/services/cart';
 import { CatalogFilterService } from '../../../../core/services/catalog-filter/catalog-filter';
 
 describe('Header', () => {
@@ -16,7 +16,7 @@ describe('Header', () => {
       imports: [Header],
       providers: [
         provideRouter([]),
-        { provide: Cart, useValue: { totalCount: count, total: signal(0), getCartItems: () => signal<CartItem[]>([]) } }
+        { provide: Cart, useValue: { totalCount: count, total: signal(0), getCartItems: () => signal([]) } }
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(Header);
@@ -79,5 +79,21 @@ describe('Header', () => {
     expect(component.isCartSidebarOpen).toBeTrue();
     component.closeCartSidebar();
     expect(component.isCartSidebarOpen).toBeFalse();
+  });
+
+  it('marks the active navigation from shared filters and restores Inicio when cleared', () => {
+    const filters = TestBed.inject(CatalogFilterService);
+    const activeItem = () => fixture.nativeElement.querySelector('#catalog-navigation [aria-current]');
+    expect(activeItem().textContent.trim()).toBe('Inicio');
+    filters.setFilters(['OFERTAS']);
+    fixture.detectChanges();
+    expect(activeItem().textContent.trim()).toBe('Ofertas');
+    expect(activeItem().classList.contains('border-black')).toBeTrue();
+    filters.setFilters(['Vinilo']);
+    fixture.detectChanges();
+    expect(activeItem().textContent.trim()).toBe('Vinilos');
+    component.goHome();
+    fixture.detectChanges();
+    expect(activeItem().textContent.trim()).toBe('Inicio');
   });
 });

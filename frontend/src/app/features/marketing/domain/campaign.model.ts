@@ -9,17 +9,21 @@ export interface CampaignCta {
 
 export interface CampaignSlide {
   id: number;
+  theme?: 'blue';
   eyebrow?: string;
   title: string;
   description?: string;
   imageUrl: string;
   mobileImageUrl?: string;
   order: number;
+  startsAt?: string;
+  endsAt?: string;
   cta?: CampaignCta;
 }
 
 export interface Campaign {
   id: number;
+  theme?: 'blue';
   name: string;
   type: CampaignType;
   isActive: boolean;

@@ -57,7 +57,7 @@ import { Component } from '@angular/core';
             <span class="text-amber-600">Poco stock</span>
           </div>
           <div class="grid grid-cols-5 gap-4 px-5 py-4 text-sm text-gray-700">
-            <span>Fallen Angel Of Doom</span>
+            <span>Abigail</span>
             <span>Vinilos</span>
             <span>$90.000</span>
             <span>0</span>

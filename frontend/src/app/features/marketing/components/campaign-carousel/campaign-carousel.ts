@@ -51,10 +51,40 @@ export class CampaignCarousel implements OnChanges, OnDestroy {
     this.activeIndex = index;
   }
 
+  getValidityLabel(slide: CampaignSlide): string | null {
+    const startsAt = this.formatDate(slide.startsAt);
+    const endsAt = this.formatDate(slide.endsAt);
+
+    if (startsAt && endsAt) {
+      return `Vigencia: ${startsAt} - ${endsAt}`;
+    }
+
+    if (endsAt) {
+      return `Vigencia hasta: ${endsAt}`;
+    }
+
+    if (startsAt) {
+      return `Vigencia desde: ${startsAt}`;
+    }
+
+    return null;
+  }
+
   handleCta(cta: CampaignCta | undefined): void {
     if (cta?.action === 'filter') {
       this.filterService.setFilters([cta.value]);
     }
+  }
+
+  private formatDate(value: string | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? null
+      : new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' }).format(date);
   }
 
   private startAutoplay(): void {

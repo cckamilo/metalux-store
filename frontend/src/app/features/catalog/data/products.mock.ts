@@ -1,4 +1,4 @@
-import { ProductCardItem } from '../components/product-card/product-card';
+import { MusicProduct } from '../domain/product.model';
 
 const musicCategory = {
   id: 1,
@@ -7,7 +7,7 @@ const musicCategory = {
   isActive: true
 };
 
-export const productsMock: ProductCardItem[] = [
+export const productsMock: MusicProduct[] = [
   {
     id: 1,
     name: 'From Mars To Sirius',
@@ -89,52 +89,52 @@ export const productsMock: ProductCardItem[] = [
   },
   {
     id: 4,
-    name: 'Fallen Angel Of Doom',
+    name: 'Abigail',
     category: musicCategory,
     details: {
       type: 'music',
-      artist: 'Blasphemy',
+      artist: 'King Diamond',
       vinylColor: { name: 'Negro', hex: '#111111' },
       format: 'vinyl',
-      genre: 'War Metal',
-      releaseYear: 2015,
-      releaseDate: '1990-10-01',
-      label: 'Wild Rags Records',
+      genre: 'Heavy Metal',
+      releaseYear: 2020,
+      releaseDate: '1987-06-15',
+      label: 'Metal Blade Records',
       discCount: 1,
-      condition: 'new'
+      condition: 'new',
+      edition: 'Reedición en LP de vinilo negro de 180 g'
     },
     price: 90000,
-    description: 'Pieza fundamental del war metal canadiense, presentada en formato vinilo para una colección extrema. La grabación ofrece una descarga directa de riffs veloces, baterías agresivas y una estética cruda que define el sonido de la banda. Una referencia de culto para quienes exploran las raíces más feroces del metal underground.',
+    description: 'Abigail es el segundo álbum de estudio de King Diamond, banda danesa de heavy metal liderada por el vocalista del mismo nombre, también conocido por su trabajo en Mercyful Fate. Publicado originalmente en 1987, es un álbum conceptual de terror que combina la voz teatral y los falsetes de King Diamond con las guitarras de Andy LaRocque y Michael Denner, el bajo de Timi Hansen y la batería de Mikkey Dee. Sus nueve temas incluyen Arrival, A Mansion in Darkness, The Family Ghost, Abigail y Black Horsemen. Esta reedición de Metal Blade Records de 2020 presenta el álbum en un LP de vinilo negro de 180 g, con inserto y tarjeta de descarga, a partir de los másteres de producción originales y sin remasterización.',
     stock: 1,
     images: [
-      'https://f4.bcbits.com/img/0047466366_10.jpg',
-      'https://f4.bcbits.com/img/a0064561049_5.jpg'
+      'https://shop-listenable.net/14880-large_default/king-diamond-abigail-lp-180g-black-vinyl.jpg'
     ],
     isActive: true,
     isNew: false
   },
   {
     id: 5,
-    name: 'Pro Xristou',
+    name: 'Absence of War Does Not Mean Peace',
     category: musicCategory,
     details: {
       type: 'music',
-      artist: 'Rotting Christ',
-      vinylColor: { name: 'Negro', hex: '#111111' },
+      artist: 'Impaled Nazarene',
+      vinylColor: { name: 'Dorado', hex: '#c5a044' },
       format: 'vinyl',
       genre: 'Black Metal',
       releaseYear: 2024,
-      releaseDate: '2024-05-24',
-      label: 'Season of Mist',
+      releaseDate: '2001-11-05',
+      label: 'Osmose Productions',
       discCount: 1,
-      condition: 'new'
+      condition: 'new',
+      edition: 'Reedición en LP de vinilo dorado con carpeta gatefold'
     },
     price: 115000,
-    description: 'Lanzamiento reciente de Rotting Christ con una propuesta oscura, épica y profundamente melódica. Sus arreglos combinan coros solemnes, guitarras envolventes y una narrativa inspirada en mitos y símbolos antiguos. Una edición pensada para seguidores de larga trayectoria y para quienes quieren descubrir la faceta más ceremonial del grupo.',
+    description: 'Absence of War Does Not Mean Peace es el séptimo álbum de estudio de Impaled Nazarene, banda finlandesa de black metal formada en 1990. Publicado originalmente en 2001 por Osmose Productions, combina la velocidad del black metal con influencias de thrash y punk en trece temas, entre ellos The Lost Art of Goat Sacrificing, Hardboiled and Still Hellbound y el tema que da título al disco. La voz de Mika Luttinen y los riffs directos y frenéticos definen una propuesta intensa y contundente. Esta reedición de Osmose Productions de 2024 presenta el álbum en un LP de vinilo dorado con carpeta gatefold.',
     stock: 2,
     images: [
-      'https://f4.bcbits.com/img/0035139854_10.jpg',
-      'https://f4.bcbits.com/img/0035139793_10.jpg'
+      'https://shop-listenable.net/24688-large_default/impaled-nazarene-absence-of-war-does-not-mean-peace-lp-gold-vinyl.jpg'
     ],
     isActive: true,
     isNew: false

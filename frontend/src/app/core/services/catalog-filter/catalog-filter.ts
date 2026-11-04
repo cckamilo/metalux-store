@@ -88,8 +88,8 @@ export class CatalogFilterService {
   private readonly defaultBandOptions = [
     'Gojira',
     'At The Gates',
-    'Blasphemy',
-    'Rotting Christ',
+    'King Diamond',
+    'Impaled Nazarene',
     'Entombed',
     'Mercyful Fate',
     'Carcass',

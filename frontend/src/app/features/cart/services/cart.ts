@@ -53,16 +53,13 @@ export class Cart {
   }
 
   removeItem(productId: number) {
-    const items = this.cartItems()
-      .map(item =>
+    this.cartItems.update(items =>
+      items.map(item =>
         item.id === productId
-          ? { ...item, quantity: item.quantity - 1 }
+          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
           : item
       )
-      .filter(item => item.quantity > 0);
-
-    this.cartItems.set(items);
-    this.getStoredCartItems();
+    );
   }
 
   clearCart() {

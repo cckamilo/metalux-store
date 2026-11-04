@@ -1,6 +1,6 @@
-<div *ngIf="show" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-0 sm:p-4"
+<div *ngIf="show" class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/30 p-0 sm:p-4"
   style="font-family: Inter, 'Segoe UI', system-ui, sans-serif">
-  <div class="relative flex max-h-dvh w-full max-w-xl flex-col overflow-hidden bg-white text-[#0b1029] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl">
+  <div class="detail-layout relative grid h-[min(100dvh,960px)] w-full max-w-[960px] overflow-hidden bg-white text-[#0b1029] shadow-2xl sm:h-[min(calc(100dvh-2rem),690px)] sm:rounded-2xl">
     <button type="button" (click)="closeModal()" aria-label="Cerrar detalle"
       class="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -8,10 +8,9 @@
       </svg>
     </button>
 
-    <div *ngIf="product" tabindex="0" role="region" aria-label="Detalle del producto"
-      class="detail-content min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
-      <div class="relative flex h-[clamp(6rem,calc(100dvh-600px),16rem)] w-full items-center justify-center bg-white p-4">
-        <img [src]="product.images?.[currentImage]" [alt]="product.name + ' — Imagen ' + (currentImage + 1) + ' de ' + product.images?.length" class="h-full w-full object-contain" />
+    <div *ngIf="product" class="detail-gallery flex min-h-0 flex-col bg-[#f7f6f5] p-4 sm:p-5">
+      <div class="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-xl bg-white py-2">
+        <img [src]="product.images?.[currentImage]" [alt]="product.name + ' — Imagen ' + (currentImage + 1) + ' de ' + product.images?.length" class="h-full w-[85%] object-contain" />
 
         <ng-container *ngIf="product.images?.length > 1">
           <button type="button" (click)="previousImage()" aria-label="Imagen anterior"
@@ -29,28 +28,30 @@
         </ng-container>
       </div>
 
-      <div *ngIf="product.images?.length > 1" class="flex flex-wrap items-center justify-center gap-2 px-6 pt-2">
+      <div *ngIf="product.images?.length > 1" class="flex shrink-0 flex-wrap items-center gap-2 pt-3">
         <button *ngFor="let image of product.images; let i = index" type="button" (click)="currentImage = i"
           [attr.aria-label]="'Ver imagen ' + (i + 1) + ' de ' + product.images.length"
           [attr.aria-pressed]="i === currentImage"
-          class="h-11 w-11 overflow-hidden rounded-lg border-2 bg-white p-0.5 transition-colors hover:border-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          class="h-11 w-11 overflow-hidden rounded-lg border-2 bg-white p-0.5 transition-colors hover:border-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:h-16 sm:w-16"
           [class.border-black]="i === currentImage" [class.border-transparent]="i !== currentImage">
           <img [src]="image" alt="" class="h-full w-full object-contain" />
         </button>
       </div>
-
-      <div class="px-6 pb-3 sm:px-7">
-      <div class="mt-3 min-w-0">
+    </div>
+    <div *ngIf="product" class="detail-summary contents">
+    <div tabindex="0" role="region" aria-label="Detalle del producto"
+      class="detail-information flex min-h-0 min-w-0 flex-col px-6 pb-3 sm:px-7 sm:pt-8 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
+      <div class="min-w-0 shrink-0 pr-10">
+        <p class="mt-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-gray-600">
+          {{ product.details?.artist }}
+        </p>
         <h2 class="break-words text-[20px] font-bold leading-snug tracking-tight text-[#0b1029]"
           style="font-family: Georgia, serif">
           {{ product.name }}
         </h2>
-        <p class="mt-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-gray-600">
-          {{ product.details?.artist }}
-        </p>
       </div>
 
-      <div class="mt-3">
+      <div class="mt-3 shrink-0">
         <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <p class="text-[32px] font-extrabold leading-none tracking-tight text-black max-[420px]:text-[28px]">{{ formatPrice(getProductPrice(product)) }}</p>
           <p *ngIf="hasDiscount(product)" class="text-sm text-gray-600 line-through">
@@ -62,7 +63,7 @@
         </div>
       </div>
 
-      <div class="mt-3">
+      <div class="mt-3 shrink-0">
         <ng-container *ngIf="product.details?.type === 'music' && product.details?.format === 'vinyl'">
           <div *ngIf="vinylVersions.length > 1; else singleVinylColor">
             <p class="text-[13px] font-semibold text-black">Versión</p>
@@ -81,7 +82,10 @@
                   [style.background-image]="color.secondaryHex ? 'repeating-conic-gradient(' + color.hex + ' 0deg 22deg, ' + color.secondaryHex + ' 22deg 26deg)' : null"></span>
               </button>
             </div>
-            <p class="text-[13px] text-gray-600">{{ currentVinylVersion?.name }}</p>
+            <p class="text-[13px] text-gray-600">
+              {{ currentVinylVersion?.name }}
+              <span *ngIf="product.details?.discCount"> · {{ product.details.discCount }} {{ product.details.discCount === 1 ? 'disco' : 'discos' }}</span>
+            </p>
           </div>
           <ng-template #singleVinylColor>
             <p *ngIf="(vinylVersions[0] || product.details?.vinylColor) as color"
@@ -96,17 +100,17 @@
         </p>
       </div>
 
-      <div class="mt-2">
-        <div class="flex gap-4 border-b border-gray-200" role="tablist" aria-label="Información del producto">
-          <button type="button" role="tab" [attr.aria-selected]="activeProductTab === 'description'"
-            (click)="activeProductTab = 'description'"
-            [class]="activeProductTab === 'description' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'"
-            class="-mb-px flex min-h-11 items-center justify-center gap-1.5 border-b-2 py-3 text-[13px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
-            </svg>
-            Descripción
-          </button>
+      <div class="detail-purchase shrink-0 bg-white pt-3 pb-3">
+        <button type="button" (click)="addToCart(product)"
+          class="flex min-h-12 w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-lg bg-black px-4 py-3.5 text-[15px] font-bold text-white shadow-sm transition hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:bg-gray-900">
+          <span>Agregar al carrito</span>
+          <span class="text-[13px] font-normal text-gray-200">{{ formatPrice(getProductPrice(product)) }}</span>
+        </button>
+        <p *ngIf="hasDiscount(product)" class="mt-4 text-center text-[12px] text-gray-600">Precio con descuento incluido</p>
+      </div>
+
+      <div class="detail-tabs mt-2 flex min-h-0 flex-1 flex-col">
+        <div class="flex shrink-0 gap-4 border-b border-gray-200" role="tablist" aria-label="Información del producto">
           <button *ngIf="product.details?.type === 'music'" type="button" role="tab"
             [attr.aria-selected]="activeProductTab === 'specifications'"
             (click)="activeProductTab = 'specifications'"
@@ -117,22 +121,31 @@
             </svg>
             Especificaciones
           </button>
+          <button type="button" role="tab" [attr.aria-selected]="activeProductTab === 'description'"
+            (click)="activeProductTab = 'description'"
+            [class]="activeProductTab === 'description' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'"
+            class="-mb-px flex min-h-11 items-center justify-center gap-1.5 border-b-2 py-3 text-[13px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+            </svg>
+            Descripción
+          </button>
         </div>
 
-        <div *ngIf="activeProductTab === 'description'" class="relative mt-3">
+        <div *ngIf="activeProductTab === 'description'" class="detail-tab-body relative mt-3 min-h-0">
           <div #scrollPanel role="tabpanel" tabindex="0" aria-label="Descripción"
             (scroll)="updatePanelFade(scrollPanel)"
-            class="detail-content h-36 overflow-y-auto overscroll-contain pr-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
+            class="detail-content h-[clamp(48px,calc(100dvh-600px),144px)] overflow-y-auto overscroll-contain pr-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
             <p class="text-sm leading-[1.6] text-[#27335b]">{{ product.description }}</p>
           </div>
           <div *ngIf="panelHasMore()" aria-hidden="true"
             class="pointer-events-none absolute right-3 bottom-0 left-0 h-12 bg-linear-to-b from-transparent to-white"></div>
         </div>
 
-        <div *ngIf="activeProductTab === 'specifications' && product.details?.type === 'music'" class="relative mt-3">
+        <div *ngIf="activeProductTab === 'specifications' && product.details?.type === 'music'" class="detail-tab-body relative mt-3 min-h-0">
         <div #scrollPanel role="tabpanel" (scroll)="updatePanelFade(scrollPanel)"
           tabindex="0" aria-label="Especificaciones"
-          class="detail-content h-36 overflow-y-auto overscroll-contain pr-3 text-[13px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
+          class="detail-content h-[clamp(48px,calc(100dvh-600px),144px)] overflow-y-auto overscroll-contain pr-3 text-[13px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-500">
           <dl class="divide-y divide-gray-200 border-b border-gray-200">
             <div *ngIf="product.details?.genre" class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 py-2">
               <dt class="text-gray-500">Género</dt>
@@ -165,14 +178,7 @@
           class="pointer-events-none absolute right-3 bottom-0 left-0 h-12 bg-linear-to-b from-transparent to-white"></div>
         </div>
       </div>
-      </div>
     </div>
-    <div *ngIf="product" class="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-7">
-      <button type="button" (click)="addToCart(product)"
-        class="flex min-h-12 w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-lg bg-black px-4 py-3.5 text-[15px] font-bold text-white shadow-sm transition hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:bg-gray-900">
-        <span>Agregar al carrito</span>
-        <span class="text-[13px] font-normal text-gray-200">{{ formatPrice(getProductPrice(product)) }}</span>
-      </button>
     </div>
   </div>
 </div>

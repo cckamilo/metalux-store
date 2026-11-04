@@ -16,6 +16,7 @@ import { RouterLink } from '@angular/router';
 })
 export class Header {
   searchQuery = '';
+  activeNavigation = 'Inicio';
   isMenuOpen = false;
   isCartSidebarOpen = false;
   readonly quickNavigation = [
@@ -39,6 +40,10 @@ export class Header {
   constructor() {
     this.filterService.filters$.pipe(takeUntilDestroyed()).subscribe(filters => {
       this.searchQuery = filters.searchQuery ?? '';
+      this.activeNavigation = filters.collection === 'new' ? 'NOVEDADES'
+        : filters.collection === 'offers' ? 'OFERTAS'
+        : filters.formats.enabled && filters.formats.values.length === 1 ? filters.formats.values[0]
+        : 'Inicio';
     });
   }
 
