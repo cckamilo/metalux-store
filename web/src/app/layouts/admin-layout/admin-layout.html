@@ -1,0 +1,45 @@
+<div class="min-h-screen bg-white text-gray-950">
+  <header class="border-b border-gray-200 bg-white px-6 py-5 lg:px-10">
+    <div class="mx-auto flex max-w-7xl items-center gap-4">
+      <button type="button" (click)="toggleSidebar()" aria-label="Abrir menú administrativo"
+        class="flex h-9 w-9 items-center justify-center text-gray-950 transition hover:bg-gray-100">
+        <ng-icon [name]="menuIcon" size="1.25rem" class="h-5 w-5"></ng-icon>
+      </button>
+      <a routerLink="/admin" class="text-lg font-semibold tracking-tight">Metaluxe Admin</a>
+      <a routerLink="/" class="ml-auto text-xs text-gray-500 transition hover:text-black">Ver tienda</a>
+    </div>
+  </header>
+
+  @if (isSidebarOpen) {
+    <div class="fixed inset-0 z-40 bg-black/50" (click)="closeSidebar()"></div>
+  }
+
+  @if (isSidebarOpen) {
+    <aside class="fixed left-0 top-0 z-50 h-full w-80 bg-black px-5 py-6 text-white shadow-xl">
+      <div class="flex items-center justify-between border-b border-white/20 pb-5">
+        <span class="text-sm font-semibold tracking-wide">Administración</span>
+        <button type="button" (click)="closeSidebar()" aria-label="Cerrar menú administrativo"
+          class="flex h-8 w-8 items-center justify-center text-gray-300 transition hover:text-white">
+          <ng-icon [name]="closeIcon" size="1.25rem" class="h-5 w-5"></ng-icon>
+        </button>
+      </div>
+      <nav aria-label="Navegación administrativa" class="mt-6 flex flex-col gap-1">
+        @for (item of navigationItems; track item) {
+          @if (item.route) {
+            <a [routerLink]="item.route" (click)="closeSidebar()"
+              routerLinkActive="bg-white text-black" [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+              class="px-3 py-3 text-sm text-gray-300 transition hover:bg-white/10 hover:text-white">
+              {{ item.label }}
+            </a>
+          } @else {
+            <span class="px-3 py-3 text-sm text-gray-500" aria-disabled="true">{{ item.label }}</span>
+          }
+        }
+      </nav>
+    </aside>
+  }
+
+  <main class="mx-auto min-w-0 max-w-7xl px-6 py-8 lg:px-10">
+    <router-outlet></router-outlet>
+  </main>
+</div>

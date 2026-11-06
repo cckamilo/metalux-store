@@ -1,0 +1,91 @@
+<!-- Home compone la pagina: la fachada mantiene el listado y los componentes emiten acciones. -->
+<section class="w-full bg-white pb-12">
+  <div class="mx-auto w-full max-w-[1800px]">
+    <!-- Las diapositivas llegan del servicio de campanas; sin contenido no se reserva espacio. -->
+    @if (campaignSlides.length > 0) {
+      <app-campaign-carousel class="block"
+      [slides]="campaignSlides"></app-campaign-carousel>
+    }
+    <!-- Destino de navegacion de header/footer; el margen evita ocultarlo bajo el encabezado fijo. -->
+    <section id="catalogo-productos" aria-label="Filtros y catálogo"
+      class="relative z-10 mt-4 min-w-0 scroll-mt-[192px] px-4 sm:scroll-mt-[172px] sm:px-6 lg:px-8 xl:scroll-mt-[120px]">
+      <div class="mb-3">
+        <nav aria-label="Migas de pan" class="text-[13px] text-gray-500">
+          <ol class="flex items-center gap-2">
+            <li>
+              <a href="/" class="hover:text-gray-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">Inicio</a>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page">Vinilos</li>
+          </ol>
+        </nav>
+        <h1 class="mt-1 text-[30px] font-bold leading-tight text-gray-900" style="font-family: Georgia, serif">Vinilos</h1>
+        <p class="mt-1 text-[14px] leading-snug text-gray-600">Explora nuestra selección de vinilos de metal y encuentra tu próximo disco.</p>
+      </div>
+      <!-- El resumen abarca filtros y productos; la linea separa la barra del catalogo. -->
+      <div class="mb-4 border-b border-gray-200 pb-1">
+        <app-catalog-toolbar [visibleCount]="listing.visibleProducts.length" [totalCount]="listing.filteredProducts.length"
+          [selectedSort]="listing.selectedSort" [selectedSortLabel]="listing.selectedSortLabel"
+          [sortOptions]="listing.sortOptions" (sortChange)="listing.selectSort($event)"
+          [activeFilters]="listing.activeFilters" (removeFilter)="listing.removeFilter($event)"
+        (clearFilters)="listing.clearActiveFilters()"></app-catalog-toolbar>
+      </div>
+      <div class="lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-9">
+        <!-- Recibe seleccion y conteos del catalogo fuente; Home dirige los eventos al servicio compartido. -->
+        <app-catalog-filters [filters]="listing.selectedFilters"
+          [bands]="listing.availableBandOptions" [genres]="listing.availableGenreOptions" [formats]="listing.formatOptions"
+          [bandCounts]="listing.bandCounts" [genreCounts]="listing.genreCounts"
+          [activeCount]="listing.activeFilters.length" [resultCount]="listing.filteredProducts.length"
+        (selectionChange)="selectFilter($event)" (clearGroup)="clearFilterGroup($event)"></app-catalog-filters>
+        <div class="min-w-0">
+          <!-- Solo presenta el bloque paginado; Home coordina compra y detalle, y pricing resuelve descuentos. -->
+          <div id="catalog-grid" [attr.aria-busy]="listing.isLoadingMore"
+            class="grid grid-cols-2 items-stretch gap-x-[18px] gap-y-7 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            @for (producto of listing.visibleProducts; track producto.id) {
+              @if (producto.stock > 0) {
+                <app-product-card [product]="producto"
+                  [finalPrice]="getProductPrice(producto)" [hasDiscount]="hasDiscount(producto)"
+                  [discountLabel]="getDiscountLabel(producto)" [isProductNew]="producto.isNew" [isActive]="producto.isActive"
+                (addToCart)="addToCart(producto)" (openDetails)="openModal(producto)"></app-product-card>
+              }
+            }
+          </div>
+          <!-- El progreso refleja productos visibles; solo el boton desaparece al completar la carga. -->
+          @if (listing.filteredProducts.length > 0) {
+            <div class="mt-10 flex flex-col items-center gap-4">
+              <p id="catalog-pagination-summary" class="text-[13px] text-gray-600">
+                Has visto {{ listing.visibleProducts.length }} de {{ listing.filteredProducts.length }} productos
+              </p>
+              <div role="progressbar" aria-label="Productos mostrados" aria-valuemin="0"
+                [attr.aria-valuenow]="listing.visibleProducts.length" [attr.aria-valuemax]="listing.filteredProducts.length"
+                aria-describedby="catalog-pagination-summary" class="h-1 w-[220px] max-w-full overflow-hidden bg-gray-200">
+                <div class="h-full bg-black"
+                [style.width.%]="listing.visibleProducts.length / listing.filteredProducts.length * 100"></div>
+              </div>
+              @if (listing.visibleProducts.length < listing.filteredProducts.length) {
+                <button
+                  type="button" (click)="listing.loadMoreProducts()" [disabled]="listing.isLoadingMore"
+                  aria-controls="catalog-grid" aria-describedby="catalog-pagination-summary"
+                  class="flex min-h-11 items-center justify-center gap-2 rounded border border-black px-7 py-3 text-[13px] font-bold uppercase tracking-[0.08em] text-gray-900 transition hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60">
+                  @if (listing.isLoadingMore) {
+                    <span aria-hidden="true" class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                  }
+                  {{ listing.isLoadingMore ? 'Cargando productos...' : 'Ver más vinilos' }}
+                </button>
+              }
+            </div>
+          }
+          <!-- Ausencia de coincidencias, no error de carga; role=status anuncia el resultado sin mover el foco. -->
+          @if (listing.filteredProducts.length === 0) {
+            <div role="status" class="py-16 text-center">
+              <p class="text-sm font-medium text-gray-900">No encontramos productos con esta búsqueda y filtros.</p>
+              <p class="mt-2 text-sm text-gray-500">Prueba con otra banda o álbum, o cambia los filtros seleccionados.</p>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+    <!-- El detalle usa seleccion local del Home; cerrarlo no modifica filtros, orden ni paginacion. -->
+    <app-product-detail-modal [product]="selectedProduct" [show]="showModal" (close)="closeModal()"></app-product-detail-modal>
+  </div>
+</section>

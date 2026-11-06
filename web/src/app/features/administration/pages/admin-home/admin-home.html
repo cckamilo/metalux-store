@@ -1,0 +1,50 @@
+<section aria-labelledby="admin-title" class="space-y-8">
+  <header class="max-w-3xl">
+    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">Administración</p>
+    <h1 id="admin-title" class="mt-2 text-3xl font-semibold tracking-tight">Panel de administración</h1>
+    <p class="mt-3 text-sm leading-6 text-gray-500">Resumen general del negocio y acceso directo a las secciones clave del catálogo y la operación.</p>
+  </header>
+
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    @for (metric of metrics; track metric) {
+      <article class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-medium uppercase tracking-[0.2em] text-gray-500">{{ metric.label }}</p>
+          <span
+            class="inline-flex rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
+          [ngClass]="{
+            'bg-emerald-100 text-emerald-700': metric.tone === 'success',
+            'bg-gray-100 text-gray-700': metric.tone === 'neutral',
+            'bg-amber-100 text-amber-700': metric.tone === 'warning',
+            'bg-red-100 text-red-700': metric.tone === 'danger'
+          }">
+            {{ metric.tone === 'success' ? 'Alto' : metric.tone === 'warning' ? 'Atención' : metric.tone === 'danger' ? 'Crítico' : 'Info' }}
+          </span>
+        </div>
+        <div class="mt-6 flex items-end justify-between gap-3">
+          <span class="text-3xl font-semibold tracking-tight text-gray-900">{{ metric.value }}</span>
+        </div>
+        <p class="mt-3 text-sm text-gray-600">{{ metric.description }}</p>
+        <a [routerLink]="metric.route" class="mt-5 inline-flex items-center text-sm font-medium text-black underline-offset-4 hover:underline">
+          Ver detalle
+        </a>
+      </article>
+    }
+  </div>
+
+  <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div class="flex items-center justify-between gap-4 border-b border-gray-200 pb-4">
+      <h2 class="text-lg font-semibold tracking-tight">Accesos rápidos</h2>
+      <span class="text-xs uppercase tracking-[0.2em] text-gray-500">Secciones</span>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      @for (link of quickLinks; track link) {
+        <a [routerLink]="link.route"
+          class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-800 transition hover:border-black hover:bg-white">
+          {{ link.label }}
+        </a>
+      }
+    </div>
+  </section>
+</section>

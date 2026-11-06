@@ -1,0 +1,309 @@
+<div class="flex h-full min-h-0 flex-col bg-white" style="font-family: Inter, 'Segoe UI', system-ui, sans-serif">
+  <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7">
+    <div class="flex gap-4">
+      <div class="flex w-6 shrink-0 flex-col items-center">
+        <div class="flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold" [ngClass]="stepCircleClasses(1)" aria-hidden="true">
+          @if (isStepComplete(1)) {
+            <span>✓</span>
+          } @else {
+            1
+          }
+        </div>
+        <div class="mt-1 min-h-8 w-px flex-1" [ngClass]="stepConnectorClasses(1)"></div>
+      </div>
+      <section class="min-w-0 flex-1 pb-7" aria-labelledby="shipping-step-heading">
+        <div class="flex min-h-6 flex-wrap items-center gap-x-3 gap-y-1">
+          <h2 id="shipping-step-heading" class="text-sm font-bold uppercase text-gray-950" [attr.aria-current]="isStepActive(1) ? 'step' : null">Datos de envío</h2>
+          @if (isStepComplete(1)) {
+            <span class="text-xs font-semibold text-emerald-700">✓ Completo</span>
+          }
+          @if (isStepComplete(1) && !isStepActive(1)) {
+            <button type="button" (click)="editShipping()" class="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-black focus-visible:outline-2 focus-visible:outline-black">
+              <ng-icon [name]="editIcon" size="0.875rem" class="h-3.5 w-3.5"></ng-icon> Editar
+            </button>
+          }
+        </div>
+
+        @if (isStepAvailable(1)) {
+          <form [formGroup]="checkoutForm" (submit)="$event.preventDefault(); continueFromShipping()" novalidate class="mt-4 grid gap-y-3">
+            <div>
+              <label for="checkout-document" class="mb-1.5 block text-xs font-semibold text-gray-600">Cédula</label>
+              <div class="relative">
+                <input id="checkout-document" type="text" inputmode="numeric" autocomplete="off" formControlName="documentId" (blur)="onShippingFieldBlur('documentId')"
+                  [ngClass]="fieldClasses('documentId')"
+                  [attr.aria-invalid]="showFieldError('documentId') ? 'true' : null"
+                  [attr.aria-describedby]="showFieldError('documentId') ? 'checkout-document-error' : null"
+                  class="h-11 w-full rounded-md border bg-white px-3 pr-9 text-sm text-gray-950 outline-none" />
+                  @if (isFieldValid('documentId')) {
+                    <span class="field-valid-icon absolute right-3 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-700" aria-hidden="true">
+                      <ng-icon [name]="validIcon" size="0.75rem" class="h-3 w-3 text-white"></ng-icon>
+                    </span>
+                  }
+                </div>
+                @if (showFieldError('documentId')) {
+                  <p id="checkout-document-error" aria-live="polite" class="mt-1 text-xs text-red-700">{{ fieldError('documentId') }}</p>
+                }
+              </div>
+              <div>
+                <label for="checkout-name" class="mb-1.5 block text-xs font-semibold text-gray-600">Nombre completo</label>
+                <div class="relative">
+                  <input id="checkout-name" type="text" autocomplete="name" formControlName="fullName" (blur)="onShippingFieldBlur('fullName')"
+                    [ngClass]="fieldClasses('fullName')"
+                    [attr.aria-invalid]="showFieldError('fullName') ? 'true' : null"
+                    [attr.aria-describedby]="showFieldError('fullName') ? 'checkout-name-error' : null"
+                    class="h-11 w-full rounded-md border bg-white px-3 pr-9 text-sm text-gray-950 outline-none" />
+                    @if (isFieldValid('fullName')) {
+                      <span class="field-valid-icon absolute right-3 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-700" aria-hidden="true">
+                        <ng-icon [name]="validIcon" size="0.75rem" class="h-3 w-3 text-white"></ng-icon>
+                      </span>
+                    }
+                  </div>
+                  @if (showFieldError('fullName')) {
+                    <p id="checkout-name-error" aria-live="polite" class="mt-1 text-xs text-red-700">{{ fieldError('fullName') }}</p>
+                  }
+                </div>
+                <div>
+                  <label for="checkout-whatsapp" class="mb-1.5 block text-xs font-semibold text-gray-600">WhatsApp</label>
+                  <div class="relative">
+                    <input id="checkout-whatsapp" type="tel" inputmode="tel" autocomplete="tel" formControlName="whatsapp" (blur)="onShippingFieldBlur('whatsapp')"
+                      [ngClass]="fieldClasses('whatsapp')"
+                      [attr.aria-invalid]="showFieldError('whatsapp') ? 'true' : null"
+                      [attr.aria-describedby]="showFieldError('whatsapp') ? 'checkout-whatsapp-error' : null"
+                      class="h-11 w-full rounded-md border bg-white px-3 pr-9 text-sm text-gray-950 outline-none" />
+                      @if (isFieldValid('whatsapp')) {
+                        <span class="field-valid-icon absolute right-3 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-700" aria-hidden="true">
+                          <ng-icon [name]="validIcon" size="0.75rem" class="h-3 w-3 text-white"></ng-icon>
+                        </span>
+                      }
+                    </div>
+                    @if (showFieldError('whatsapp')) {
+                      <p id="checkout-whatsapp-error" aria-live="polite" class="mt-1 text-xs text-red-700">{{ fieldError('whatsapp') }}</p>
+                    }
+                  </div>
+                  <div>
+                    <label for="checkout-email" class="mb-1.5 block text-xs font-semibold text-gray-600">Correo electrónico</label>
+                    <div class="relative">
+                      <input id="checkout-email" type="email" autocomplete="email" formControlName="email" (blur)="onShippingFieldBlur('email')"
+                        [ngClass]="fieldClasses('email')"
+                        [attr.aria-invalid]="showFieldError('email') ? 'true' : null"
+                        [attr.aria-describedby]="showFieldError('email') ? 'checkout-email-error' : null"
+                        class="h-11 w-full rounded-md border bg-white px-3 pr-9 text-sm text-gray-950 outline-none" />
+                        @if (isFieldValid('email')) {
+                          <span class="field-valid-icon absolute right-3 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-700" aria-hidden="true">
+                            <ng-icon [name]="validIcon" size="0.75rem" class="h-3 w-3 text-white"></ng-icon>
+                          </span>
+                        }
+                      </div>
+                      @if (showFieldError('email')) {
+                        <p id="checkout-email-error" aria-live="polite" class="mt-1 text-xs text-red-700">{{ fieldError('email') }}</p>
+                      }
+                    </div>
+                    <div>
+                      <label for="checkout-city" class="mb-1.5 block text-xs font-semibold text-gray-600">Ciudad o municipio</label>
+                      <div class="relative">
+                        <select id="checkout-city" formControlName="city" (blur)="onShippingFieldBlur('city')" (change)="onCityChanged()"
+                          [ngClass]="fieldClasses('city')"
+                          [attr.aria-invalid]="showFieldError('city') ? 'true' : null"
+                          [attr.aria-describedby]="showFieldError('city') ? 'checkout-city-error' : null"
+                          class="h-11 w-full rounded-md border bg-white px-3 pr-10 text-sm text-gray-950 outline-none">
+                          <option value="">Selecciona una ciudad</option>
+                          @for (city of mock.cities; track city) {
+                            <option [value]="city.name">{{ city.name }}, {{ city.department }}</option>
+                          }
+                        </select>
+                        @if (isFieldValid('city')) {
+                          <span class="field-valid-icon absolute right-8 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-700" aria-hidden="true">
+                            <ng-icon [name]="validIcon" size="0.75rem" class="h-3 w-3 text-white"></ng-icon>
+                          </span>
+                        }
+                      </div>
+                      @if (showFieldError('city')) {
+                        <p id="checkout-city-error" aria-live="polite" class="mt-1 text-xs text-red-700">{{ fieldError('city') }}</p>
+                      }
+                    </div>
+                    <div>
+                      <label for="checkout-address" class="mb-1.5 block text-xs font-semibold text-gray-600">Dirección</label>
+                      <div class="relative">
+                        <input id="checkout-address" type="text" autocomplete="street-address" formControlName="address" (blur)="onShippingFieldBlur('address')"
+                          [ngClass]="fieldClasses('address')"
+                          [attr.aria-invalid]="showFieldError('address') ? 'true' : null"
+                          [attr.aria-describedby]="showFieldError('address') ? 'checkout-address-error' : null"
+                          class="h-11 w-full rounded-md border bg-white px-3 pr-9 text-sm text-gray-950 outline-none" />
+                          @if (isFieldValid('address')) {
+                            <span class="field-valid-icon absolute right-3 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-700" aria-hidden="true">
+                              <ng-icon [name]="validIcon" size="0.75rem" class="h-3 w-3 text-white"></ng-icon>
+                            </span>
+                          }
+                        </div>
+                        @if (showFieldError('address')) {
+                          <p id="checkout-address-error" aria-live="polite" class="mt-1 text-xs text-red-700">{{ fieldError('address') }}</p>
+                        }
+                      </div>
+                    </form>
+                  }
+                </section>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex w-6 shrink-0 flex-col items-center">
+                  <div class="flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold" [ngClass]="stepCircleClasses(2)" aria-hidden="true">
+                    @if (isStepComplete(2)) {
+                      <span>✓</span>
+                    } @else {
+                      2
+                    }
+                  </div>
+                  <div class="mt-1 min-h-8 w-px flex-1" [ngClass]="stepConnectorClasses(2)"></div>
+                </div>
+                <section class="min-w-0 flex-1 pb-7" aria-labelledby="payment-step-heading">
+                  <div class="flex min-h-6 flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 id="payment-step-heading" class="text-sm font-bold uppercase text-gray-950" [attr.aria-current]="isStepActive(2) ? 'step' : null">Medio de pago</h2>
+                    @if (isStepComplete(2)) {
+                      <span class="text-xs font-semibold text-emerald-700">✓ Completo</span>
+                    }
+                  </div>
+                  @if (isStepAvailable(2)) {
+                    <div class="mt-4">
+                      <fieldset class="space-y-2.5">
+                        <legend class="sr-only">Selecciona un medio de pago</legend>
+                        @for (method of availablePaymentMethods(); track method) {
+                          <label class="flex min-h-[68px] cursor-pointer items-center gap-3 rounded-lg border border-gray-200 px-3.5 py-3 transition has-[:checked]:border-gray-950 has-[:checked]:ring-1 has-[:checked]:ring-gray-950 has-[:disabled]:cursor-default hover:border-gray-400">
+                            <input type="radio" name="checkout-payment" [value]="method.id" [checked]="state.paymentMethod() === method.id" (change)="selectPaymentMethod(method.id)" class="h-4 w-4 shrink-0 accent-black" />
+                            <span class="min-w-0">
+                              <span class="block text-sm font-semibold text-gray-900">{{ method.label }}</span>
+                              <span class="mt-0.5 block text-xs text-gray-500">{{ method.description }}</span>
+                            </span>
+                          </label>
+                        }
+                      </fieldset>
+                      @if (selectedCity() && !selectedCity()?.cashOnDelivery) {
+                        <p role="status" class="mt-3 text-xs leading-5 text-gray-600">El pago contra entrega no está disponible para esta ciudad. Puedes elegir otro medio de pago.</p>
+                      }
+                    </div>
+                  }
+                </section>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex w-6 shrink-0 flex-col items-center">
+                  <div class="flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold" [ngClass]="stepCircleClasses(3)" aria-hidden="true">
+                    @if (isStepComplete(3)) {
+                      <span>✓</span>
+                    } @else {
+                      3
+                    }
+                  </div>
+                  <div class="mt-1 min-h-8 w-px flex-1" [ngClass]="stepConnectorClasses(3)"></div>
+                </div>
+                <section class="min-w-0 flex-1 pb-7" aria-labelledby="confirmation-step-heading">
+                  <div class="flex min-h-6 flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 id="confirmation-step-heading" class="text-sm font-bold uppercase text-gray-950" [attr.aria-current]="isStepActive(3) ? 'step' : null">Confirmación</h2>
+                    @if (isStepComplete(3)) {
+                      <span class="text-xs font-semibold text-emerald-700">✓ Completo</span>
+                    }
+                  </div>
+                  @if (isStepAvailable(3)) {
+                    <div class="mt-4">
+                      <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0 space-y-3 text-sm text-gray-900">
+                          <p><span class="block font-medium">{{ state.draft().whatsapp }}</span><span class="text-xs text-gray-500">WhatsApp</span></p>
+                          <p><span class="block break-all font-medium">{{ state.draft().email }}</span><span class="text-xs text-gray-500">Correo</span></p>
+                          <p><span class="block font-medium">{{ state.draft().fullName }} · {{ state.draft().documentId }}</span><span class="text-xs text-gray-500">Titular</span></p>
+                          <p><span class="block font-medium">{{ state.draft().address }} · {{ selectedCity()?.name }}, {{ selectedCity()?.department }}</span><span class="text-xs text-gray-500">Entrega</span></p>
+                        </div>
+                        <button type="button" (click)="editShipping()" class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-gray-600 hover:text-black focus-visible:outline-2 focus-visible:outline-black">
+                          <ng-icon [name]="editIcon" size="0.875rem" class="h-3.5 w-3.5"></ng-icon> Editar
+                        </button>
+                      </div>
+                      <div class="mt-4 flex items-center justify-between gap-3 border-b border-gray-200 pb-4">
+                        <div class="flex min-w-0 items-center gap-2">
+                          @for (item of cartItems().slice(0, 4); track item.id) {
+                            <div class="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-gray-50">
+                              @if (item.image) {
+                                <img [src]="item.image" [alt]="item.name" class="h-full w-full object-cover" />
+                              }
+                              @if (!item.image) {
+                                <span class="text-[9px] text-gray-500">Img</span>
+                              }
+                              <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gray-950 px-1 text-[9px] font-semibold text-white">{{ item.quantity }}</span>
+                            </div>
+                          }
+                        </div>
+                        <span class="shrink-0 text-xs text-gray-500">{{ totalCount() }} {{ totalCount() === 1 ? 'producto' : 'productos' }}</span>
+                      </div>
+                      <button type="button" (click)="detailsExpanded.set(!detailsExpanded())" [attr.aria-expanded]="detailsExpanded()" class="mt-3 text-xs font-semibold text-gray-600 hover:text-black focus-visible:outline-2 focus-visible:outline-black">
+                        {{ detailsExpanded() ? 'Ocultar detalles' : 'Ver detalles' }}
+                      </button>
+                      @if (detailsExpanded()) {
+                        <div class="mt-3 space-y-3 text-sm">
+                          <div class="flex justify-between gap-4"><span>Productos</span><span>{{ formatPrice(originalSubtotal()) }}</span></div>
+                          <div class="flex justify-between gap-4 text-gray-600"><span>Descuento</span><span>{{ discount() > 0 ? '−' : '' }}{{ formatPrice(discount()) }}</span></div>
+                          <div class="flex justify-between gap-4"><span>Envío</span><span>{{ hasFreeShipping() ? 'Gratis' : formatPrice(shipping()) }}</span></div>
+                          <div class="flex justify-between gap-4 border-t border-gray-200 pt-3 font-bold"><span>Total</span><span>{{ formatPrice(total()) }}</span></div>
+                        </div>
+                      }
+                      <div class="mt-4 flex items-center justify-between gap-4 border-t border-gray-200 pt-4 text-sm">
+                        <span class="min-w-0 font-medium text-gray-800">{{ selectedPaymentLabel() }}</span>
+                        <button type="button" (click)="editPayment()" class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-gray-600 hover:text-black focus-visible:outline-2 focus-visible:outline-black">
+                          <ng-icon [name]="editIcon" size="0.875rem" class="h-3.5 w-3.5"></ng-icon> Editar
+                        </button>
+                      </div>
+                      <p class="mt-4 text-xs leading-5 text-gray-500">Al confirmar aceptas las políticas de datos, compras, cambios y devoluciones.</p>
+                    </div>
+                  }
+                </section>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex w-6 shrink-0 flex-col items-center">
+                  <div class="flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold" [ngClass]="stepCircleClasses(4)" aria-hidden="true">
+                    @if (isStepComplete(4)) {
+                      <span>✓</span>
+                    } @else {
+                      4
+                    }
+                  </div>
+                </div>
+                <section class="min-w-0 flex-1 pb-2" aria-labelledby="pay-step-heading">
+                  <div class="flex min-h-6 flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 id="pay-step-heading" class="text-sm font-bold uppercase text-gray-950" [attr.aria-current]="isStepActive(4) ? 'step' : null">Pagar</h2>
+                    @if (isStepComplete(4)) {
+                      <span class="text-xs font-semibold text-emerald-700">✓ Completo</span>
+                    }
+                  </div>
+                  @if (isStepAvailable(4)) {
+                    <div class="mt-4">
+                      @if (state.paymentState() === 'success') {
+                        <div role="status" class="border border-emerald-200 bg-emerald-50 p-4">
+                          <p class="text-sm font-semibold text-emerald-900">¡Pedido confirmado!</p>
+                          <p class="mt-1 text-sm text-emerald-800">Número de pedido: {{ state.orderNumber() }}</p>
+                        </div>
+                      }
+                      @if (state.paymentState() === 'error') {
+                        <div role="alert" class="border border-red-200 bg-red-50 p-4">
+                          <p class="text-sm font-semibold text-red-900">No pudimos completar el pago.</p>
+                          <p class="mt-1 text-sm text-red-800">La simulación reportó un error. Puedes volver a intentarlo.</p>
+                        </div>
+                      }
+                      <p class="text-xs leading-5 text-gray-500">Pulsa Pagar para confirmar el pedido. No se realizará ningún cobro real.</p>
+                    </div>
+                  }
+                </section>
+              </div>
+            </div>
+
+            <footer class="shrink-0 border-t border-gray-200 bg-white px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-7">
+              <button type="button" (click)="pay(state.paymentState() === 'error')"
+                [disabled]="(!isStepActive(3) && !isStepActive(4)) || state.paymentState() === 'processing' || state.paymentState() === 'success'"
+                class="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-lg bg-gray-950 px-4 text-sm font-semibold text-white transition hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-45">
+                <span class="flex items-center gap-2">
+                  @if (state.paymentState() === 'processing') {
+                    <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true"></span>
+                  }
+                  {{ state.paymentState() === 'processing' ? 'Procesando…' : state.paymentState() === 'error' ? 'Reintentar' : state.paymentState() === 'success' ? 'Pedido confirmado' : 'Pagar' }}
+                </span>
+                <span>{{ formatPrice(total()) }}</span>
+              </button>
+              <p class="mt-2.5 text-center text-xs text-gray-500">Simulación segura de pago, sin transacción real.</p>
+            </footer>
+          </div>
