@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ProductDetailModal } from './product-detail-modal';
 import { Product } from '../../../features/catalog/domain/product.model';
@@ -122,6 +122,23 @@ describe('ProductDetailModal', () => {
       expect(component.addToCartEvent.emit).toHaveBeenCalledWith(product);
     });
 
+    it('shows a loading spinner while adding from the modal', fakeAsync(() => {
+      const purchase = element.querySelector<HTMLButtonElement>('.detail-purchase button')!;
+      purchase.click();
+      fixture.detectChanges();
+
+      expect(purchase.disabled).toBeTrue();
+      expect(purchase.getAttribute('aria-busy')).toBe('true');
+      expect(purchase.textContent?.trim()).toBe('');
+      expect(purchase.getAttribute('aria-label')).toContain('Agregar al carrito');
+      expect(purchase.querySelector('.animate-spin')).not.toBeNull();
+
+      tick(650);
+      fixture.detectChanges();
+      expect(purchase.disabled).toBeFalse();
+      expect(purchase.textContent).toContain('Agregar al carrito');
+    }));
+
     it('hides thumbnails and gallery arrows for a single image', () => {
       fixture.componentRef.setInput('product', { ...product, images: ['cover.jpg'] });
       fixture.detectChanges();
@@ -174,18 +191,20 @@ describe('ProductDetailModal', () => {
       fixture.componentRef.setInput('product', { ...product, stock: 1 });
       fixture.detectChanges();
       expect(element.querySelector('[role="status"]')?.textContent?.trim()).toBe('Queda 1 unidad');
+      expect(element.querySelector('[role="status"]')?.classList.contains('text-black')).toBeTrue();
 
       fixture.componentRef.setInput('product', { ...product, stock: 0 });
       fixture.detectChanges();
       expect(element.querySelector('[role="status"]')).toBeNull();
     });
 
-    it('shows stock only at or below the configurable threshold', () => {
+    it('shows only low-stock notices at the configurable threshold', () => {
       expect(element.querySelector('[role="status"]')).toBeNull();
 
       fixture.componentRef.setInput('product', { ...product, stock: 2 });
       fixture.detectChanges();
       expect(element.querySelector('[role="status"]')?.textContent?.trim()).toBe('Quedan 2 unidades');
+      expect(element.querySelector('[role="status"]')?.classList.contains('text-black')).toBeTrue();
 
       fixture.componentRef.setInput('lowStockThreshold', 1);
       fixture.detectChanges();
@@ -195,6 +214,7 @@ describe('ProductDetailModal', () => {
       fixture.componentRef.setInput('product', product);
       fixture.detectChanges();
       expect(element.querySelector('[role="status"]')?.textContent?.trim()).toBe('Quedan 3 unidades');
+      expect(element.querySelector('[role="status"]')?.classList.contains('text-black')).toBeTrue();
     });
 
     it('presents specification rows with the selected vinyl color', () => {

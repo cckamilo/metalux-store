@@ -1,23 +1,31 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnDestroy, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideArrowLeft, lucideArrowRight, lucidePause, lucidePlay } from '@ng-icons/lucide';
 import { CatalogFilterService } from '../../../../core/services/catalog-filter/catalog-filter';
 import { CampaignCta, CampaignSlide } from '../../domain/campaign.model';
 
 @Component({
   standalone: true,
   selector: 'app-campaign-carousel',
-  imports: [CommonModule],
+  imports: [CommonModule, NgIcon],
+  providers: [provideIcons({ lucideArrowLeft, lucideArrowRight, lucidePause, lucidePlay })],
   changeDetection: ChangeDetectionStrategy.Eager,
-  templateUrl: './campaign-carousel.html'
+  templateUrl: './campaign-carousel.html',
+  styleUrl: './campaign-carousel.css'
 })
 export class CampaignCarousel implements OnChanges, OnDestroy {
   @Input() slides: CampaignSlide[] = [];
   activeIndex = 0;
+  isPaused = false;
+  isInteracting = false;
   private readonly intervalMs = 6000;
   private intervalId?: ReturnType<typeof setInterval>;
 
   constructor(
-    private filterService: CatalogFilterService
+    private filterService: CatalogFilterService,
+    private router: Router
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -52,6 +60,16 @@ export class CampaignCarousel implements OnChanges, OnDestroy {
     this.activeIndex = index;
   }
 
+  togglePause(): void {
+    this.isPaused = !this.isPaused;
+    this.stopAutoplay();
+    if (!this.isPaused) this.startAutoplay();
+  }
+
+  setInteraction(interacting: boolean): void {
+    this.isInteracting = interacting;
+  }
+
   getValidityLabel(slide: CampaignSlide): string | null {
     const startsAt = this.formatDate(slide.startsAt);
     const endsAt = this.formatDate(slide.endsAt);
@@ -74,6 +92,7 @@ export class CampaignCarousel implements OnChanges, OnDestroy {
   handleCta(cta: CampaignCta | undefined): void {
     if (cta?.action === 'filter') {
       this.filterService.setFilters([cta.value]);
+      void this.router.navigateByUrl('/vinilos');
     }
   }
 
@@ -93,7 +112,9 @@ export class CampaignCarousel implements OnChanges, OnDestroy {
       return;
     }
 
-    this.intervalId = setInterval(() => this.next(), this.intervalMs);
+    this.intervalId = setInterval(() => {
+      if (!this.isPaused && !this.isInteracting && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) this.next();
+    }, this.intervalMs);
   }
 
   private stopAutoplay(): void {

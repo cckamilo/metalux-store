@@ -18,8 +18,10 @@ export class ProductDetailModal implements OnChanges, OnDestroy {
   private pricingService = inject(PricingService);
   activeProductTab: 'description' | 'specifications' = 'specifications';
   currentImage = 0;
+  isAddingToCart = false;
   readonly panelHasMore = signal(false);
   private panelObserver?: ResizeObserver;
+  private cartAddTimer?: ReturnType<typeof setTimeout>;
 
   get vinylVersions(): NonNullable<MusicDetails['vinylColors']> {
     return this.product?.details?.type === 'music' && this.product.details.format === 'vinyl'
@@ -50,6 +52,7 @@ export class ProductDetailModal implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.panelObserver?.disconnect();
+    if (this.cartAddTimer) clearTimeout(this.cartAddTimer);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -82,7 +85,13 @@ export class ProductDetailModal implements OnChanges, OnDestroy {
   }
 
   addToCart(product: any) {
+    if (this.isAddingToCart) return;
+    this.isAddingToCart = true;
     this.addToCartEvent.emit(product);
+    this.cartAddTimer = setTimeout(() => {
+      this.isAddingToCart = false;
+      this.cartAddTimer = undefined;
+    }, 650);
   }
 
   formatPrice(price: number): string {

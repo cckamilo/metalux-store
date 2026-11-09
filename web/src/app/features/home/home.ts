@@ -1,6 +1,7 @@
 
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CatalogFilterService } from '../../core/services/catalog-filter/catalog-filter';
+import { UserMessageService } from '../../core/services/user-message/user-message.service';
 import { ProductDetailModal } from '../../shared/components/product-detail-modal/product-detail-modal';
 import { Cart, CartItem } from '../cart/services/cart';
 import { CatalogFilters, FilterGroup, FilterSelection } from '../catalog/components/catalog-filters/catalog-filters';
@@ -8,13 +9,11 @@ import { CatalogToolbar } from '../catalog/components/catalog-toolbar/catalog-to
 import { ProductCardComponent, ProductCardItem } from '../catalog/components/product-card/product-card';
 import { CatalogListingFacade } from '../catalog/services/catalog-listing.facade';
 import { PricingService } from '../catalog/services/pricing.service';
-import { CampaignCarousel } from '../marketing/components/campaign-carousel/campaign-carousel';
-import { CampaignService } from '../marketing/services/campaign.service';
 
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [ProductDetailModal, CampaignCarousel, ProductCardComponent, CatalogFilters, CatalogToolbar],
+  imports: [ProductDetailModal, ProductCardComponent, CatalogFilters, CatalogToolbar],
   providers: [CatalogListingFacade],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './home.html'
@@ -22,11 +21,31 @@ import { CampaignService } from '../marketing/services/campaign.service';
 export class Home {
   readonly listing = inject(CatalogListingFacade);
   private readonly cart = inject(Cart);
+  private readonly messages = inject(UserMessageService);
   private readonly filterService = inject(CatalogFilterService);
   private readonly pricingService = inject(PricingService);
-  readonly campaignSlides = inject(CampaignService).getHomeCarouselSlides();
   showModal = false;
   selectedProduct: ProductCardItem | null = null;
+
+  get catalogTitle(): string {
+    const filters = this.listing.selectedFilters;
+    if (filters.collection === 'new') return 'Novedades';
+    if (filters.collection === 'offers') return 'Ofertas';
+
+    const formats = filters.formats.enabled ? filters.formats.values : [];
+    if (formats.length > 1) return 'Catálogo';
+    return formats[0] === 'CD' ? 'CDs' : 'Vinilos';
+  }
+
+  get catalogDescription(): string {
+    switch (this.catalogTitle) {
+      case 'Novedades': return 'Descubre los lanzamientos más recientes para tu colección.';
+      case 'Ofertas': return 'Encuentra discos seleccionados con descuento.';
+      case 'CDs': return 'Explora nuestra selección de álbumes en CD.';
+      case 'Catálogo': return 'Explora nuestra selección de discos en vinilo y CD.';
+      default: return 'Explora nuestra selección de vinilos de metal y encuentra tu próximo disco.';
+    }
+  }
 
   /** Envia la seleccion visual al servicio que comparte filtros con header y footer. */
   selectFilter({ group, value, selected }: FilterSelection): void {
@@ -53,6 +72,7 @@ export class Home {
       image: product.images[0], quantity: 1
     };
     this.cart.addItem(item);
+    this.messages.success('Agregado al carrito', { title: 'Carrito', duration: 2500 });
   }
 
   /** Delega el precio final al servicio comercial existente. */

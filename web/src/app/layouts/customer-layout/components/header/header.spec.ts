@@ -15,7 +15,7 @@ describe('Header', () => {
     await TestBed.configureTestingModule({
       imports: [Header],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'vinilos', redirectTo: '/' }]),
         { provide: Cart, useValue: { totalCount: count, total: signal(0), getCartItems: () => signal([]) } }
       ]
     }).compileComponents();
@@ -81,10 +81,18 @@ describe('Header', () => {
     expect(component.isCartSidebarOpen).toBeFalse();
   });
 
-  it('marks the active navigation from shared filters and restores Inicio when cleared', () => {
+  it('marks the active catalog navigation and leaves Inicio out of the menu', () => {
     const filters = TestBed.inject(CatalogFilterService);
     const activeItem = () => fixture.nativeElement.querySelector('#catalog-navigation [aria-current]');
-    expect(activeItem().textContent.trim()).toBe('Inicio');
+    const navigationText = fixture.nativeElement.querySelector('#catalog-navigation').textContent;
+    expect(navigationText).not.toContain('Inicio');
+    expect(navigationText).not.toContain('Novedades');
+    expect(activeItem()).toBeNull();
+    expect(fixture.nativeElement.querySelector('header a[aria-label="Metaluxe, inicio"]').classList.contains('border-black')).toBeTrue();
+    filters.setFilters(['NOVEDADES']);
+    fixture.detectChanges();
+    expect(activeItem().textContent.trim()).toBe('Vinilos');
+    expect(activeItem().classList.contains('border-black')).toBeTrue();
     filters.setFilters(['OFERTAS']);
     fixture.detectChanges();
     expect(activeItem().textContent.trim()).toBe('Ofertas');
@@ -92,8 +100,13 @@ describe('Header', () => {
     filters.setFilters(['Vinilo']);
     fixture.detectChanges();
     expect(activeItem().textContent.trim()).toBe('Vinilos');
+    filters.setFilters(['Vinilo', 'CD']);
+    fixture.detectChanges();
+    const activeItems = Array.from(fixture.nativeElement.querySelectorAll('#catalog-navigation [aria-current]') as NodeListOf<HTMLElement>);
+    expect(activeItems.map(item => item.textContent?.trim())).toEqual(['Vinilos', 'CDs']);
     component.goHome();
     fixture.detectChanges();
-    expect(activeItem().textContent.trim()).toBe('Inicio');
+    expect(activeItem()).toBeNull();
+    expect(filters.getFilters().collection).toBeUndefined();
   });
 });

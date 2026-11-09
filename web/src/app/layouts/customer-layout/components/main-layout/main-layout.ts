@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
 import { RouterOutlet } from '@angular/router';

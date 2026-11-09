@@ -1,107 +1,53 @@
-<footer class="w-full border-t border-gray-200 bg-gray-50 text-gray-900">
-  <section aria-labelledby="newsletter-title" class="border-b border-gray-200 bg-gray-950 px-4 py-10 text-white sm:px-6 lg:px-8">
-    <div class="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Suscripción de demostración</p>
-        <h2 id="newsletter-title" class="mt-2 text-2xl font-bold" style="font-family: Georgia, serif">Novedades para tu colección</h2>
-        <p id="newsletter-description" class="mt-3 text-sm leading-relaxed text-gray-300">Prueba con un correo ficticio. Solo se guarda el último registro y su consentimiento en este navegador. No enviamos datos ni correos; borrar los datos del navegador elimina el registro.</p>
+<footer class="mt-20 w-full bg-black text-white">
+  <div class="mx-auto w-full max-w-[1200px] px-4 pt-14 pb-8" style="padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));">
+    <div class="grid grid-cols-2 gap-x-6 gap-y-8 min-[641px]:grid-cols-[2fr_1fr_1fr] min-[641px]:gap-x-10">
+      <div class="col-span-2 min-w-0 min-[641px]:col-span-1">
+        <a routerLink="/" (click)="showHome()" aria-label="Metaluxe, inicio"
+          class="inline-flex min-h-11 items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+          <img src="assets/images/img-1.png" alt="" class="h-7 w-7 object-contain" />
+          <span class="text-xl font-bold tracking-tight" style="font-family: 'Fredoka', sans-serif;">Metaluxe</span>
+        </a>
+        <p class="mt-3 max-w-sm text-[13px] leading-5 text-[#B0B0B0]">Vinilos y CDs de metal. Envío gratis desde $200.000 en Colombia.</p>
       </div>
-      <form #newsletter="ngForm" (ngSubmit)="subscribe(newsletter)" novalidate aria-describedby="newsletter-description" class="min-w-0">
-        <label for="newsletter-email" class="mb-2 block text-sm">Correo electrónico</label>
-        <div class="flex flex-col gap-2 sm:flex-row">
-          <input id="newsletter-email" name="email" type="email" required email maxlength="254" [(ngModel)]="email"
-            placeholder="coleccionista@example.com" aria-describedby="newsletter-error"
-            class="h-11 min-w-0 flex-1 rounded border border-gray-500 bg-white px-3 text-sm text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-white" />
-            <button type="submit" class="min-h-11 rounded bg-white px-5 text-sm font-semibold text-black hover:bg-gray-200">Suscribirme (demo)</button>
-          </div>
-          <label class="mt-3 flex items-start gap-2 text-xs leading-relaxed text-gray-300">
-            <input name="consent" type="checkbox" required [(ngModel)]="consent" class="mt-1 h-4 w-4 shrink-0 accent-white" />
-            <span>Acepto guardar localmente el correo y la fecha de consentimiento para esta demo, según la <a href="#demo-privacy" class="underline underline-offset-2">privacidad de ejemplo</a>.</span>
-          </label>
-          <p id="newsletter-error" role="alert" class="mt-2 text-xs text-red-300">{{ subscriptionError }}</p>
-          <p role="status" class="mt-2 text-xs text-gray-200">{{ subscriptionMessage }}</p>
-          <button type="button" (click)="removeSubscription()" class="mt-2 min-h-11 text-xs text-gray-300 underline underline-offset-4">Eliminar registro local</button>
-        </form>
-      </div>
-    </section>
-    <div class="mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 gap-x-6 gap-y-8 py-10 sm:py-12 lg:grid-cols-[2fr_1fr_1fr_1.5fr] lg:gap-x-10">
-        <div class="col-span-2 lg:col-span-1">
-          <a routerLink="/" (click)="showCatalog()" aria-label="Metaluxe, volver al catálogo"
-            class="inline-flex min-h-11 items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
-            <img src="assets/images/img-1.png" alt="Metaluxe" class="h-9 w-auto object-contain" />
-            <span class="text-xl font-bold tracking-tight" style="font-family: 'Fredoka', sans-serif;">Metaluxe</span>
-          </a>
-          <p class="mt-3 max-w-sm text-sm leading-relaxed text-gray-600">
-            Explora nuestro catálogo de metal en vinilo y CD. Encuentra bandas, álbumes y ediciones para tu colección.
-          </p>
-        </div>
 
-        <nav aria-labelledby="footer-catalog-title">
-          <h2 id="footer-catalog-title" class="mb-3 text-xs font-semibold uppercase tracking-[0.16em]">Catálogo</h2>
-          <ul>
-            @for (item of catalogLinks; track item) {
-              <li>
-                <button type="button" (click)="selectFilter(item.filter)"
-                  class="min-h-11 rounded text-left text-sm text-gray-600 transition hover:text-black hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
-                  {{ item.label }}
-                </button>
-              </li>
-            }
+      <nav aria-labelledby="footer-store-title" class="min-w-0">
+        <h2 id="footer-store-title" class="text-xs font-semibold uppercase tracking-[0.12em] text-[#B0B0B0]">Tienda</h2>
+        <ul class="mt-3 space-y-0.5">
+          @for (item of storeLinks; track item) {
             <li>
-              <button type="button" (click)="showCatalog()"
-                class="min-h-11 rounded text-left text-sm text-gray-600 transition hover:text-black hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
-                Ver todo
+              <button type="button" (click)="selectFilter(item.filter)"
+                class="inline-flex min-h-7 max-w-full items-center rounded text-left text-sm text-white hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                {{ item.label }}
               </button>
             </li>
-          </ul>
-        </nav>
+          }
+        </ul>
+      </nav>
 
-        <nav aria-labelledby="footer-explore-title">
-          <h2 id="footer-explore-title" class="mb-3 text-xs font-semibold uppercase tracking-[0.16em]">Explora</h2>
-          <ul>
-            @for (item of collectionLinks; track item) {
-              <li>
-                <button type="button" (click)="selectFilter(item.filter)"
-                  class="min-h-11 rounded text-left text-sm text-gray-600 transition hover:text-black hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
-                  {{ item.label }}
-                </button>
-              </li>
-            }
-          </ul>
-        </nav>
-        <section class="col-span-2 min-w-0 lg:col-span-1" aria-labelledby="footer-contact-title">
-          <h2 id="footer-contact-title" class="mb-3 text-xs font-semibold uppercase tracking-[0.16em]">Contacto · Demo</h2>
-          <p class="text-xs leading-relaxed text-gray-500">Datos ficticios. No son canales de atención.</p>
-          <p class="mt-3 break-words text-sm text-gray-600">hola&#64;metaluxe.example</p>
-          <p class="mt-2 text-sm text-gray-600">Calle del Vinilo 123, Ciudad Demo</p>
-          <p class="mt-2 text-sm text-gray-600">Lunes a viernes, 9:00–18:00 (ejemplo)</p>
-          <div class="mt-3 flex flex-wrap gap-x-4">
-            <a href="https://example.com/metaluxe-instagram" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center text-xs underline">Instagram (ejemplo)</a>
-            <a href="https://example.com/metaluxe-facebook" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center text-xs underline">Facebook (ejemplo)</a>
-          </div>
-        </section>
-      </div>
-
-      <section aria-labelledby="demo-policies-title" class="border-t border-gray-200 py-6">
-        <h2 id="demo-policies-title" class="text-xs font-semibold uppercase tracking-wider">Políticas de ejemplo · Sin validez comercial</h2>
-        <div class="mt-4 grid gap-6 text-xs leading-relaxed text-gray-600 sm:grid-cols-3">
-          <section id="demo-shipping" class="scroll-mt-[192px] sm:scroll-mt-[172px] xl:scroll-mt-[120px]">
-            <h3 class="font-semibold text-gray-900">Envíos y pagos</h3>
-            <p class="mt-2">Ejemplo ficticio: envío gratis desde $200.000, despacho en 24 horas hábiles y pago con tarjeta o contra entrega. No hay pagos ni entregas habilitados por estos avisos.</p>
-          </section>
-          <section>
-            <h3 class="font-semibold text-gray-900">Cambios y devoluciones</h3>
-            <p class="mt-2">Ejemplo ficticio: solicitar cambios dentro de 15 días con el producto sin uso y su empaque original. Este texto ilustra el diseño; no define una política real ni reemplaza derechos legales.</p>
-          </section>
-          <section id="demo-privacy" class="scroll-mt-[192px] sm:scroll-mt-[172px] xl:scroll-mt-[120px]">
-            <h3 class="font-semibold text-gray-900">Privacidad de la demo local</h3>
-            <p class="mt-2">Al aceptar se guarda el último correo, consentimiento, versión del aviso y fecha en localStorage. No se transmite al servidor ni se envían mensajes. El registro persiste al recargar; puedes eliminarlo con “Eliminar registro local” o borrando los datos del navegador.</p>
-          </section>
-        </div>
-      </section>
-      <div class="border-t border-gray-200 py-5 text-xs leading-relaxed text-gray-500">
-        &copy; {{ year }} Metaluxe. Todos los derechos reservados.
-      </div>
+      <nav aria-labelledby="footer-help-title" class="min-w-0">
+        <h2 id="footer-help-title" class="text-xs font-semibold uppercase tracking-[0.12em] text-[#B0B0B0]">Ayuda</h2>
+        <ul class="mt-3 space-y-0.5">
+          @for (item of helpLinks; track item) {
+            <li>
+              <button type="button" (click)="showHelp(item.label, item.message)"
+                class="inline-flex min-h-7 max-w-full items-center rounded text-left text-sm text-white hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                {{ item.label }}
+              </button>
+            </li>
+          }
+          <li>
+            <a href="mailto:hola@metaluxe.example"
+              class="inline-flex min-h-7 max-w-full items-center rounded text-sm text-white hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              Contacto
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
-  </footer>
+
+    <div class="mt-10 flex min-h-10 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[#2A2A2A] pt-4 text-xs leading-5 text-[#B0B0B0]">
+      <p>&copy; {{ year }} Metaluxe</p>
+      <p>Pago contra entrega disponible</p>
+    </div>
+  </div>
+</footer>

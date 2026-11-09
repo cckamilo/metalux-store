@@ -8,6 +8,12 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./features/home/home-landing').then(m => m.HomeLanding)
+      },
+      {
+        path: 'vinilos',
         loadComponent: () =>
           import('./features/home/home').then(m => m.Home)
       }

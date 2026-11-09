@@ -19,4 +19,9 @@ describe('MainLayout', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('keeps campaign content inside the active route instead of the shared shell', () => {
+    expect(fixture.nativeElement.querySelector('[aria-label="Campañas destacadas"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
+  });
 });

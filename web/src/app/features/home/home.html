@@ -1,11 +1,6 @@
 <!-- Home compone la pagina: la fachada mantiene el listado y los componentes emiten acciones. -->
 <section class="w-full bg-white pb-12">
   <div class="mx-auto w-full max-w-[1800px]">
-    <!-- Las diapositivas llegan del servicio de campanas; sin contenido no se reserva espacio. -->
-    @if (campaignSlides.length > 0) {
-      <app-campaign-carousel class="block"
-      [slides]="campaignSlides"></app-campaign-carousel>
-    }
     <!-- Destino de navegacion de header/footer; el margen evita ocultarlo bajo el encabezado fijo. -->
     <section id="catalogo-productos" aria-label="Filtros y catálogo"
       class="relative z-10 mt-4 min-w-0 scroll-mt-[192px] px-4 sm:scroll-mt-[172px] sm:px-6 lg:px-8 xl:scroll-mt-[120px]">
@@ -16,11 +11,11 @@
               <a href="/" class="hover:text-gray-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">Inicio</a>
             </li>
             <li aria-hidden="true">/</li>
-            <li aria-current="page">Vinilos</li>
+            <li aria-current="page">{{ catalogTitle }}</li>
           </ol>
         </nav>
-        <h1 class="mt-1 text-[30px] font-bold leading-tight text-gray-900" style="font-family: Georgia, serif">Vinilos</h1>
-        <p class="mt-1 text-[14px] leading-snug text-gray-600">Explora nuestra selección de vinilos de metal y encuentra tu próximo disco.</p>
+        <h1 class="mt-1 text-[30px] font-bold leading-tight text-gray-900" style="font-family: Georgia, serif">{{ catalogTitle }}</h1>
+        <p class="mt-1 text-[14px] leading-snug text-gray-600">{{ catalogDescription }}</p>
       </div>
       <!-- El resumen abarca filtros y productos; la linea separa la barra del catalogo. -->
       <div class="mb-4 border-b border-gray-200 pb-1">
@@ -86,6 +81,7 @@
       </div>
     </section>
     <!-- El detalle usa seleccion local del Home; cerrarlo no modifica filtros, orden ni paginacion. -->
-    <app-product-detail-modal [product]="selectedProduct" [show]="showModal" (close)="closeModal()"></app-product-detail-modal>
+    <app-product-detail-modal [product]="selectedProduct" [show]="showModal"
+      (addToCartEvent)="addToCart($event)" (close)="closeModal()"></app-product-detail-modal>
   </div>
 </section>

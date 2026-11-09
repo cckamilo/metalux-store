@@ -50,6 +50,11 @@ describe('CatalogFilters', () => {
     const toggle = root.querySelector<HTMLButtonElement>('[aria-controls="catalog-filters"]')!;
     toggle.click();
     fixture.detectChanges();
+    const panel = root.querySelector('aside#catalog-filters')!;
+    expect(toggle.textContent).toContain('Filtros');
+    expect(panel.getAttribute('role')).toBe('dialog');
+    expect(panel.getAttribute('aria-modal')).toBe('true');
+    expect(panel.classList.contains('fixed')).toBeTrue();
     root.querySelector<HTMLButtonElement>('aside button.lg\\:hidden')!.click();
     fixture.detectChanges();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');

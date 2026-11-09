@@ -1,85 +1,62 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { FormsModule, NgForm } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { CatalogFilterService } from '../../../../core/services/catalog-filter/catalog-filter';
+import { UserMessageService } from '../../../../core/services/user-message/user-message.service';
 
 @Component({
   standalone: true,
   selector: 'app-footer',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './footer.html'
 })
 export class Footer {
   private readonly filterService = inject(CatalogFilterService);
+  private readonly messages = inject(UserMessageService);
+  private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   readonly year = new Date().getFullYear();
-  email = '';
-  consent = false;
-  subscriptionMessage = '';
-  subscriptionError = '';
-  readonly subscriptionKey = 'metaluxe-demo-subscription';
-  readonly catalogLinks = [
+  readonly storeLinks = [
     { label: 'Vinilos', filter: 'Vinilo' },
-    { label: 'CDs', filter: 'CD' }
-  ];
-  readonly collectionLinks = [
+    { label: 'CDs', filter: 'CD' },
     { label: 'Novedades', filter: 'NOVEDADES' },
     { label: 'Ofertas', filter: 'OFERTAS' }
+  ];
+  readonly helpLinks = [
+    {
+      label: 'Envíos y pagos',
+      message: 'Envío gratis desde $200.000. Esta tienda de demostración no procesa pagos ni entregas.'
+    },
+    {
+      label: 'Cambios',
+      message: 'La información de cambios está pendiente de definición para esta tienda de demostración.'
+    },
+    {
+      label: 'Privacidad',
+      message: 'Esta demostración guarda el carrito en tu navegador y no transmite esos datos a un servidor.'
+    }
   ];
 
   selectFilter(filter: string): void {
     this.filterService.setFilters([filter]);
-    this.scrollToCatalog();
+    this.navigateToCatalog('/vinilos');
   }
 
-  showCatalog(): void {
+  showHome(): void {
     this.filterService.clearFilters();
-    this.scrollToCatalog();
+    void this.router.navigateByUrl('/');
   }
 
-  subscribe(form: NgForm): void {
-    this.subscriptionMessage = '';
-    this.subscriptionError = '';
-    if (form.invalid || !this.consent) {
-      this.subscriptionError = 'Ingresa un correo válido y acepta el consentimiento de demostración.';
-      return;
-    }
-    try {
-      const storage = this.document.defaultView?.localStorage;
-      if (!storage) throw new DOMException('Local storage unavailable', 'SecurityError');
-      storage.setItem(this.subscriptionKey, JSON.stringify({
-        email: this.email.trim(),
-        consent: true,
-        consentVersion: 'demo-v1',
-        consentedAt: new Date().toISOString()
-      }));
-    } catch (error) {
-      if (!(error instanceof DOMException)) throw error;
-      this.subscriptionError = 'No se pudo guardar en este navegador. Revisa los permisos de almacenamiento e inténtalo de nuevo.';
-      return;
-    }
-    this.subscriptionMessage = 'Registro de demostración guardado solo en este navegador. No recibirás correos.';
-    form.resetForm({ email: '', consent: false });
-  }
-
-  removeSubscription(): void {
-    this.subscriptionMessage = '';
-    this.subscriptionError = '';
-    try {
-      const storage = this.document.defaultView?.localStorage;
-      if (!storage) throw new DOMException('Local storage unavailable', 'SecurityError');
-      storage.removeItem(this.subscriptionKey);
-    } catch (error) {
-      if (!(error instanceof DOMException)) throw error;
-      this.subscriptionError = 'No se pudo eliminar el registro local. Revisa los permisos de almacenamiento.';
-      return;
-    }
-    this.subscriptionMessage = 'Registro local eliminado. No queda una suscripción de demostración en este navegador.';
+  showHelp(title: string, message: string): void {
+    this.messages.info(message, { title, duration: null });
   }
 
   private scrollToCatalog(): void {
     this.document.getElementById('catalogo-productos')?.scrollIntoView({ block: 'start' });
+  }
+
+  private navigateToCatalog(path: '/' | '/vinilos'): void {
+    this.router.navigateByUrl(path).then(() => this.scrollToCatalog());
   }
 }

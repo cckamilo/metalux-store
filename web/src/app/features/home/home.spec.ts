@@ -180,7 +180,7 @@ describe('Home', () => {
     const lastBand: HTMLLabelElement = fixture.nativeElement.querySelector('#band-options-list label:last-child');
     const selectedBand = lastBand.querySelector('span')!.textContent!.trim();
     lastBand.querySelector('input')!.click();
-    toggle.click();
+    (fixture.nativeElement.querySelector('[aria-label="Cerrar filtros"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(listing.selectedFilters.bands.values).toEqual([selectedBand]);
     expect(toggle.getAttribute('aria-expanded')).toBe('false');

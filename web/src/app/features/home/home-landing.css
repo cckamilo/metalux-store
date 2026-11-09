@@ -1,0 +1,16 @@
+:host {
+  display: block;
+  --home-gutter: 16px;
+}
+
+.home-section {
+  padding-inline: var(--home-gutter);
+}
+
+@media (min-width: 640px) {
+  :host { --home-gutter: 24px; }
+}
+
+@media (min-width: 1024px) {
+  :host { --home-gutter: 32px; }
+}

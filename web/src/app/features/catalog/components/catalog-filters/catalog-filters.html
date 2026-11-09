@@ -1,14 +1,28 @@
-<button #filtersToggle type="button" (click)="showMobileFilters = !showMobileFilters"
+@if (showMobileFilters) {
+  <button type="button" (click)="closeMobileFilters()" aria-label="Cerrar panel de filtros"
+    class="fixed inset-0 z-40 bg-black/45 lg:hidden"></button>
+}
+<button #filtersToggle type="button" (click)="showMobileFilters = true"
   [attr.aria-expanded]="showMobileFilters" aria-controls="catalog-filters"
-  class="mb-4 flex min-h-11 w-full items-center justify-between rounded border border-gray-300 px-4 text-sm font-semibold lg:hidden">
-  <span>{{ showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros' }} @if (activeCount) {
-    <span>({{ activeCount }})</span>
-  }</span>
-  <span aria-hidden="true">{{ showMobileFilters ? '−' : '+' }}</span>
+  class="mb-4 inline-flex min-h-11 items-center gap-2 rounded border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-900 hover:border-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black lg:hidden">
+  <ng-icon name="lucideSlidersHorizontal" size="1rem" class="h-4 w-4"></ng-icon>
+  <span>Filtros</span>
+  @if (activeCount) {
+    <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[11px] text-white">{{ activeCount }}</span>
+  }
 </button>
-<aside id="catalog-filters" aria-label="Filtros del catálogo" [ngClass]="showMobileFilters ? 'block' : 'hidden'"
-  class="mb-6 rounded border border-gray-200 p-4 lg:mb-0 lg:block lg:rounded-none lg:border-0 lg:p-0">
-  <div class="flex w-full flex-col border-t border-gray-200">
+<aside id="catalog-filters" aria-label="Filtros del catálogo"
+  [attr.role]="showMobileFilters ? 'dialog' : null" [attr.aria-modal]="showMobileFilters ? 'true' : null"
+  [ngClass]="showMobileFilters ? 'fixed inset-y-0 left-0 z-50 flex translate-x-0' : 'hidden -translate-x-full lg:sticky lg:flex lg:translate-x-0'"
+  class="h-dvh w-80 max-w-[calc(100vw-2.5rem)] shrink-0 flex-col overflow-y-auto bg-white p-4 shadow-xl transition-transform duration-300 motion-reduce:transition-none lg:top-[130px] lg:h-auto lg:w-auto lg:max-w-none lg:overflow-visible lg:bg-transparent lg:p-0 lg:shadow-none lg:transition-none">
+  <div class="mb-2 flex min-h-11 items-center justify-between lg:hidden">
+    <h2 class="text-base font-bold text-gray-900">Filtros</h2>
+    <button type="button" (click)="closeMobileFilters()" aria-label="Cerrar filtros"
+      class="flex h-10 w-10 items-center justify-center rounded hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-black">
+      <ng-icon name="lucideX" size="1.25rem" class="h-5 w-5"></ng-icon>
+    </button>
+  </div>
+  <div class="flex min-w-0 w-full flex-1 flex-col border-t border-gray-200 lg:flex-none">
     @for (group of groups; track group) {
       @if (filters[group.key].enabled) {
         <div class="relative flex flex-col border-b border-gray-200 py-4">
@@ -65,8 +79,8 @@
           }
         }
         @if (showMobileFilters) {
-          <button type="button" (click)="showMobileFilters = false; filtersToggle.focus()"
-            class="min-h-11 rounded bg-black px-4 py-3 text-sm font-semibold text-white lg:hidden">
+          <button type="button" (click)="closeMobileFilters()"
+            class="sticky bottom-0 mt-2 min-h-11 rounded bg-black px-4 py-3 text-sm font-semibold text-white shadow-lg lg:hidden">
             Ver {{ resultCount }} {{ resultCount === 1 ? 'producto' : 'productos' }}
           </button>
         }

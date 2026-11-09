@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideSlidersHorizontal, lucideX } from '@ng-icons/lucide';
 import { CatalogFilterState } from '../../../../core/services/catalog-filter/catalog-filter';
 import { searchFilterOptions } from '../../queries/catalog.queries';
 
@@ -20,7 +22,8 @@ export interface FilterSelection {
 @Component({
   selector: 'app-catalog-filters',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon],
+  providers: [provideIcons({ lucideSlidersHorizontal, lucideX })],
   host: { class: 'block min-w-0 lg:sticky lg:top-[130px] lg:self-start' },
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './catalog-filters.html'
@@ -44,6 +47,7 @@ export class CatalogFilters {
   /** Solicita limpiar un solo grupo, sin cerrar el panel ni borrar las busquedas locales. */
   @Output() clearGroup = new EventEmitter<FilterGroup>();
   showMobileFilters = false;
+  @ViewChild('filtersToggle') private filtersToggle?: ElementRef<HTMLButtonElement>;
   readonly initialLimit = 6;
   readonly groups = [
     { key: 'bands', id: 'band', title: 'BANDAS', search: 'Buscar banda', empty: 'No se encontraron bandas.' },
@@ -79,6 +83,16 @@ export class CatalogFilters {
   /** Emite la seleccion sin modificar los datos recibidos del estado compartido. */
   select(group: FilterGroup, value: string, selected: boolean): void {
     this.selectionChange.emit({ group, value, selected });
+  }
+
+  closeMobileFilters(): void {
+    this.showMobileFilters = false;
+    this.filtersToggle?.nativeElement.focus();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showMobileFilters) this.closeMobileFilters();
   }
 
   /** Construye el texto del control de expansion sin alterar la seleccion. */
